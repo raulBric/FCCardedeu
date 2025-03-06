@@ -1,4 +1,4 @@
-// import HeroSection from "./components/HeroSection"
+import HeroSection from "@/components/HeroSection"
 // import NextMatchSection from "./components/NextMatchSection"
 // import NoticiasSection from "./components/NoticiasSection"
 // import PatrocinadoresSection from "./components/PatrocinadoresSection"
@@ -10,8 +10,8 @@ import { Button } from "@/components/ui/button"
 export default function Home() {
   return (
     <>
-      {/* <HeroSection />
-      <NextMatchSection />
+      <HeroSection />
+      {/* <NextMatchSection />
       <PublicidadCards />
       <NoticiasSection />
       <PatrocinadoresSection /> */}

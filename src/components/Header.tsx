@@ -1,10 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import Escudo from "@/assets/Escudo.png"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -86,7 +88,12 @@ export default function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <Link href="/" className="text-3xl font-bold text-club-secondary">
-            ⚽ FC Cardedeu
+            <Image
+              src={Escudo}
+              alt="FC Cardedeu"
+              width={200}
+              height={50}
+              />
           </Link>
           <button
             className="text-club-secondary z-50"

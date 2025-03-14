@@ -1,15 +1,23 @@
 import Link from "next/link"
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin } from "lucide-react"
+import Image from "next/image"
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, User } from "lucide-react"
+import Escudo from "@/assets/Escudo.png"
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0F172A] text-gray-300">
-      <div className="container mx-auto px-4 py-12">
-        {/* Logo y descripción */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          <div className="space-y-4">
-            <Link href="/" className="text-2xl font-bold text-white flex items-center">
-              ⚽ FC Cardedeu
+    <footer className="bg-[#0F172A] text-gray-300 py-12">
+      <div className="container mx-auto px-6 md:px-12">
+        {/* Contenedor principal - CENTRADO en Mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 text-center md:text-left">
+          {/* Logo y descripción */}
+          <div className="flex flex-col items-center md:items-start space-y-4">
+            <Link href="/" className="flex flex-col items-center md:items-start">
+              <Image
+                src={Escudo || "/placeholder.svg"}
+                alt="FC Cardedeu"
+                className="w-20 h-20 sm:w-24 sm:h-24 transition-all duration-300"
+              />
+              <span className="text-lg font-bold text-white mt-2">FC Cardedeu</span>
             </Link>
             <p className="text-sm text-gray-400 max-w-xs">
               Empoderamos el fútbol local con pasión y compromiso desde 1934. Únete a nuestra familia deportiva.
@@ -17,7 +25,7 @@ export default function Footer() {
           </div>
 
           {/* Enlaces rápidos */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="text-white font-semibold mb-4">Enlaces Rápidos</h3>
             <ul className="space-y-2">
               <li>
@@ -49,60 +57,76 @@ export default function Footer() {
           </div>
 
           {/* Contacto */}
-          <div>
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="text-white font-semibold mb-4">Contacto</h3>
-            <ul className="space-y-2">
-              <li className="flex items-center text-sm">
+            <ul className="space-y-3">
+              <li className="flex items-center justify-center md:justify-start text-sm">
                 <Mail className="w-4 h-4 mr-2 text-blue-500" />
                 <a href="mailto:info@fccardedeu.com" className="hover:text-blue-500 transition-colors">
                   info@fccardedeu.com
                 </a>
               </li>
-              <li className="flex items-center text-sm">
+              <li className="flex items-center justify-center md:justify-start text-sm">
                 <Phone className="w-4 h-4 mr-2 text-blue-500" />
                 <a href="tel:+34900000000" className="hover:text-blue-500 transition-colors">
                   +34 900 000 000
                 </a>
               </li>
-              <li className="flex items-center text-sm">
+              <li className="flex items-center justify-center md:justify-start text-sm">
                 <MapPin className="w-4 h-4 mr-2 text-blue-500" />
-                <span>Cardedeu, Barcelona</span>
+                <a
+                  href="https://maps.app.goo.gl/it6qNZzNC1doUkPB8"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-500 transition-colors"
+                >
+                  Cardedeu, Barcelona
+                </a>
               </li>
             </ul>
           </div>
 
-          {/* Redes sociales */}
-          <div>
+          {/* Redes sociales y MyClub */}
+          <div className="flex flex-col items-center md:items-start">
             <h3 className="text-white font-semibold mb-4">Síguenos</h3>
-            <div className="flex space-x-4">
+            <div className="flex justify-center md:justify-start space-x-4">
               <a
                 href="#"
                 className="w-10 h-10 rounded-full bg-blue-500 bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-colors"
-                aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 rounded-full bg-blue-500 bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-colors"
-                aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="#"
                 className="w-10 h-10 rounded-full bg-blue-500 bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-colors"
-                aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
+            </div>
+
+            {/* MyClub */}
+            <div className="mt-6">
+              <h3 className="text-white font-semibold mb-2">Mi Club</h3>
+              <Link
+                href="/my-club"
+                className="flex items-center space-x-2 text-blue-500 hover:text-white transition-colors"
+              >
+                <User className="w-5 h-5" />
+                <span>Acceder a MyClub</span>
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Línea divisoria */}
         <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-center md:justify-between items-center text-center">
             <p className="text-sm text-gray-400">
               © {new Date().getFullYear()} FC Cardedeu. Todos los derechos reservados.
             </p>

@@ -1,16 +1,15 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, useRef } from "react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import Equipo from "@/assets/Equipo3.webp"
-import Equipo1 from "@/assets/Equipo1.webp"
-import Equipo2 from "@/assets/Equipo2.webp"
-import Equipo3 from "@/assets/Equipo4.webp"
-
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Equipo from "@/assets/Equipo3.webp";
+import Equipo1 from "@/assets/Equipo1.webp";
+import Equipo2 from "@/assets/Equipo2.webp";
+import Equipo3 from "@/assets/Equipo4.webp";
 
 // Imágenes del carrusel
 const imatges = [
@@ -34,108 +33,111 @@ const imatges = [
     alt: "Estadi del FC Cardedeu",
     titol: "El nostre camp, la nostra fortalesa",
   },
-]
+];
 
 export default function HeroSection() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isClient, setIsClient] = useState(false)
-  const autoplayTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isClient, setIsClient] = useState(false);
+  const autoplayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Marcar cuando estamos en el cliente
   useEffect(() => {
-    setIsClient(true)
+    setIsClient(true);
 
     // Limpiar al desmontar
     return () => {
       if (autoplayTimerRef.current) {
-        clearInterval(autoplayTimerRef.current)
+        clearInterval(autoplayTimerRef.current);
       }
-    }
-  }, [])
+    };
+  }, []);
 
   // Configurar autoplay solo en el cliente
   useEffect(() => {
     if (isClient) {
-      startAutoplay()
+      startAutoplay();
 
       // Pausar cuando la página no está visible
       const handleVisibilityChange = () => {
         if (document.visibilityState === "visible") {
-          startAutoplay()
+          startAutoplay();
         } else {
-          stopAutoplay()
+          stopAutoplay();
         }
-      }
+      };
 
-      document.addEventListener("visibilitychange", handleVisibilityChange)
+      document.addEventListener("visibilitychange", handleVisibilityChange);
 
       return () => {
-        stopAutoplay()
-        document.removeEventListener("visibilitychange", handleVisibilityChange)
-      }
+        stopAutoplay();
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange,
+        );
+      };
     }
-  }, [isClient])
+  }, [isClient]);
 
   const startAutoplay = () => {
-    stopAutoplay() // Limpiar cualquier intervalo existente
+    stopAutoplay(); // Limpiar cualquier intervalo existente
 
     autoplayTimerRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % imatges.length)
-    }, 5000)
-  }
+      setCurrentIndex((prev) => (prev + 1) % imatges.length);
+    }, 5000);
+  };
 
   const stopAutoplay = () => {
     if (autoplayTimerRef.current) {
-      clearInterval(autoplayTimerRef.current)
-      autoplayTimerRef.current = null
+      clearInterval(autoplayTimerRef.current);
+      autoplayTimerRef.current = null;
     }
-  }
+  };
 
   // Navegación
   const handlePrev = () => {
-    stopAutoplay()
-    setCurrentIndex((prev) => (prev - 1 + imatges.length) % imatges.length)
+    stopAutoplay();
+    setCurrentIndex((prev) => (prev - 1 + imatges.length) % imatges.length);
     // Reiniciar autoplay después de un tiempo
-    setTimeout(startAutoplay, 10000)
-  }
+    setTimeout(startAutoplay, 10000);
+  };
 
   const handleNext = () => {
-    stopAutoplay()
-    setCurrentIndex((prev) => (prev + 1) % imatges.length)
+    stopAutoplay();
+    setCurrentIndex((prev) => (prev + 1) % imatges.length);
     // Reiniciar autoplay después de un tiempo
-    setTimeout(startAutoplay, 10000)
-  }
+    setTimeout(startAutoplay, 10000);
+  };
 
   const handleDotClick = (index: number) => {
-    stopAutoplay()
-    setCurrentIndex(index)
+    stopAutoplay();
+    setCurrentIndex(index);
     // Reiniciar autoplay después de un tiempo
-    setTimeout(startAutoplay, 10000)
-  }
+    setTimeout(startAutoplay, 10000);
+  };
 
   // Función para manejar gestos táctiles
-  const touchStartX = useRef(0)
-  const touchEndX = useRef(0)
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX
-  }
+    touchStartX.current = e.touches[0].clientX;
+  };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX
-  }
+    touchEndX.current = e.touches[0].clientX;
+  };
 
   const handleTouchEnd = () => {
-    const difference = touchStartX.current - touchEndX.current
+    const difference = touchStartX.current - touchEndX.current;
 
     if (Math.abs(difference) > 50) {
       if (difference > 0) {
-        handleNext()
+        handleNext();
       } else {
-        handlePrev()
+        handlePrev();
       }
     }
-  }
+  };
 
   return (
     <section
@@ -171,7 +173,9 @@ export default function HeroSection() {
 
             {/* Título en la parte inferior */}
             <div className="absolute inset-x-0 bottom-0 flex items-center justify-center pb-24 px-4">
-              <h1 className="text-4xl md:text-7xl font-bold text-white text-center drop-shadow-lg">{imatge.titol}</h1>
+              <h1 className="text-4xl md:text-7xl font-bold text-white text-center drop-shadow-lg">
+                {imatge.titol}
+              </h1>
             </div>
           </div>
         ))}
@@ -209,13 +213,14 @@ export default function HeroSection() {
             size="icon"
             variant="ghost"
             className={`w-3 h-3 p-0 min-w-0 rounded-full transition-all duration-300 ${
-              index === currentIndex ? "bg-white hover:bg-white/90 scale-110" : "bg-white/50 hover:bg-white/70"
+              index === currentIndex
+                ? "bg-white hover:bg-white/90 scale-110"
+                : "bg-white/50 hover:bg-white/70"
             }`}
             aria-label={`Ir a la imagen ${index + 1}`}
           />
         ))}
       </div>
     </section>
-  )
+  );
 }
-

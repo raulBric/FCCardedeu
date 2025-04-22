@@ -1,16 +1,22 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import Link from "next/link"
-import Image from "next/image"
-import { useState, useEffect, useCallback } from "react"
-import { Menu, X, ChevronDown, Search } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { cn } from "@/lib/utils"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import Escudo from "@/assets/Escudo.png"
+import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect, useCallback } from "react";
+import { Menu, X, ChevronDown, Instagram } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import Escudo from "@/assets/Escudo.png";
+import { SearchDialog } from "@/components/SearchDialog";
 // import { Input } from "@/components/ui/input"
 
 // Menu structure with categories
@@ -22,6 +28,7 @@ const menuStructure = [
     items: [
       { name: "Primer Equip", path: "/primer-equip" },
       { name: "Futbol Base", path: "/futbol-base" },
+      { name: "Femení", path: "/femeni" },
     ],
   },
   {
@@ -50,49 +57,49 @@ const menuStructure = [
       { name: "Pagaments", path: "/pagaments" },
     ],
   },
-]
+];
 
 // Define proper types
 type MenuItem = {
-  name: string
-  path: string
-  isActive?: boolean
-}
+  name: string;
+  path: string;
+  isActive?: boolean;
+};
 
 type MenuStructureItem =
   | { name: string; path: string; type: "link" }
-  | { name: string; type: "dropdown"; items: MenuItem[] }
+  | { name: string; type: "dropdown"; items: MenuItem[] };
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [searchOpen, setSearchOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Debounced scroll handler for better performance
   const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 10)
-  }, [])
+    setScrolled(window.scrollY > 10);
+  }, []);
 
   useEffect(() => {
     // Handle body scroll lock when menu is open
-    document.body.style.overflow = isMenuOpen ? "hidden" : "auto"
+    document.body.style.overflow = isMenuOpen ? "hidden" : "auto";
 
     // Add scroll event listener with passive option for better performance
-    window.addEventListener("scroll", handleScroll, { passive: true })
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      document.body.style.overflow = "auto"
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [isMenuOpen, handleScroll])
+      document.body.style.overflow = "auto";
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [isMenuOpen, handleScroll]);
 
   // Handle keyboard navigation with proper type
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === "Escape") {
-      setIsMenuOpen(false)
-      setSearchOpen(false)
+      setIsMenuOpen(false);
+      setSearchOpen(false);
     }
-  }
+  };
 
   return (
     <header
@@ -103,14 +110,18 @@ export default function Header() {
       onKeyDown={handleKeyDown}
     >
       <div className="w-full flex items-center justify-between h-20 px-4 md:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2" aria-label="FC Cardedeu - Pàgina d'inici">
+        <Link
+          href="/"
+          className="flex items-center gap-2"
+          aria-label="FC Cardedeu - Pàgina d'inici"
+        >
           <Image
             src={Escudo}
             alt="FC Cardedeu"
             width={100}
             height={100}
             priority
-            className="object-contain"
+            className="object-contain w-32 h-32"
           />
         </Link>
 
@@ -128,14 +139,23 @@ export default function Header() {
             ) : (
               <DropdownMenu key={item.name}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-white font-medium px-3 py-2 hover:bg-red-700">
+                  <Button
+                    variant="ghost"
+                    className="text-white font-medium px-3 py-2 hover:bg-red-700"
+                  >
                     {item.name} <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="center" className="bg-red-800 border-white/20">
+                <DropdownMenuContent
+                  align="center"
+                  className="bg-red-800 border-white/20"
+                >
                   {item.items?.map((subItem) => (
                     <DropdownMenuItem key={subItem.name} asChild>
-                      <Link href={subItem.path} className="text-white hover:bg-white/10 cursor-pointer">
+                      <Link
+                        href={subItem.path}
+                        className="text-white hover:bg-white/10 cursor-pointer"
+                      >
                         {subItem.name}
                       </Link>
                     </DropdownMenuItem>
@@ -148,27 +168,32 @@ export default function Header() {
 
         <div className="flex items-center gap-2">
           {/* Search Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-white hover:bg-white/10"
-            onClick={() => setSearchOpen(!searchOpen)}
-            aria-label="Cerca"
+          <Link
+            href="https://www.instagram.com/fccardedeu/?hl=es"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-20 w-10 rounded-full bg-transparent text-white hover:bg-white/10 "
+            aria-label="Instagram"
           >
-            <Search className="h-10 w-10" />
-          </Button>
+            <Instagram className="h-6 w-6" />
+          </Link>
+          
+          {/* Search Dialog */}
+          <SearchDialog />
 
           {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden text-white hover:bg-white/10"
+          <button
+            className="md:hidden flex items-center justify-center h-8 w-8 rounded-full bg-transparent text-white hover:bg-white/10"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label={isMenuOpen ? "Tanca el menú" : "Obre el menú"}
             aria-expanded={isMenuOpen}
           >
-            {isMenuOpen ? <X className="h-10 w-10" /> : <Menu className="h-10 w-10" />}
-          </Button>
+            {isMenuOpen ? (
+              <X className="h-10 w-10" />
+            ) : (
+              <Menu className="h-10 w-10" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -215,18 +240,17 @@ export default function Header() {
                 height={100}
                 className="object-contain"
               />
-              
             </div>
-            <span className="text-white text-2xl font-bold text-center">FC Cardedeu</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-6 right-6 text-white hover:bg-red-700"
+            <span className="text-white text-2xl font-bold text-center">
+              FC Cardedeu
+            </span>
+            <button
+              className="absolute top-6 right-6 flex items-center justify-center h-8 w-8 rounded-full bg-transparent text-white hover:bg-red-700"
               onClick={() => setIsMenuOpen(false)}
               aria-label="Tanca el menú"
             >
-              <X className="h-10 w-10" />
-            </Button>
+              <X className="h-8 w-8" />
+            </button>
 
             <div className="overflow-y-auto flex-1 px-6 py-2">
               <ul className="space-y-6">
@@ -242,7 +266,9 @@ export default function Header() {
                       </Link>
                     ) : (
                       <div className="space-y-4">
-                        <h3 className="text-white/70 text-lg font-medium">{item.name}</h3>
+                        <h3 className="text-white/70 text-lg font-medium">
+                          {item.name}
+                        </h3>
                         <ul className="pl-4 space-y-3 border-l border-white/20">
                           {item.items?.map((subItem) => (
                             <li key={subItem.name}>
@@ -266,6 +292,5 @@ export default function Header() {
         )}
       </AnimatePresence>
     </header>
-  )
+  );
 }
-

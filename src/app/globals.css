@@ -2,17 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .bg-grid-pattern {
+    background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+                      linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-100% - 3rem)); /* Desplazamiento completo más espacio entre elementos */
+    }
+  }
+  
+  .animate-scroll {
+    animation: scroll 30s linear infinite;
+  }
+  
+  .sponsor-item.appear {
+    animation: fadeIn 0.5s ease-in-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
 @layer base {
-  html, body {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 355 91% 43%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 0.5rem;
+  }
+
+  html,
+  body {
     width: 100%;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
   }
 
-  /* body {
+  body {
     @apply bg-background text-foreground;
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-  } */
+  }
 }

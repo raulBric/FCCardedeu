@@ -1,7 +1,15 @@
-import Link from "next/link"
-import Image from "next/image"
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, User } from "lucide-react"
-import Escudo from "@/assets/Escudo.png"
+import Link from "next/link";
+import Image from "next/image";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Mail,
+  Phone,
+  MapPin,
+  User,
+} from "lucide-react";
+import Escudo from "@/assets/Escudo.png";
 
 export default function Footer() {
   return (
@@ -11,16 +19,22 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 text-center md:text-left">
           {/* Logo y descripción */}
           <div className="flex flex-col items-center md:items-start space-y-4">
-            <Link href="/" className="flex flex-col items-center md:items-start">
+            <Link
+              href="/"
+              className="flex flex-col items-center md:items-start"
+            >
               <Image
                 src={Escudo || "/placeholder.svg"}
                 alt="FC Cardedeu"
                 className="w-20 h-20 sm:w-24 sm:h-24 transition-all duration-300"
               />
-              <span className="text-lg font-bold text-white mt-2">FC Cardedeu</span>
+              <span className="text-lg font-bold text-white mt-2">
+                FC Cardedeu
+              </span>
             </Link>
             <p className="text-sm text-gray-400 max-w-xs">
-              Empoderamos el fútbol local con pasión y compromiso desde 1934. Únete a nuestra familia deportiva.
+              Empoderamos el fútbol local con pasión y compromiso desde 1934.
+              Únete a nuestra familia deportiva.
             </p>
           </div>
 
@@ -29,27 +43,42 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Enlaces Rápidos</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/resultados" className="text-sm hover:text-blue-500 transition-colors">
+                <Link
+                  href="/resultados"
+                  className="text-sm hover:text-blue-500 transition-colors"
+                >
                   Resultados
                 </Link>
               </li>
               <li>
-                <Link href="/clasificacion" className="text-sm hover:text-blue-500 transition-colors">
+                <Link
+                  href="/clasificacion"
+                  className="text-sm hover:text-blue-500 transition-colors"
+                >
                   Clasificación
                 </Link>
               </li>
               <li>
-                <Link href="/noticias" className="text-sm hover:text-blue-500 transition-colors">
-                  Noticias
+                <Link
+                  href="/noticies"
+                  className="text-sm hover:text-blue-500 transition-colors"
+                >
+                  Notícies
                 </Link>
               </li>
               <li>
-                <Link href="/jugadores" className="text-sm hover:text-blue-500 transition-colors">
+                <Link
+                  href="/jugadores"
+                  className="text-sm hover:text-blue-500 transition-colors"
+                >
                   Jugadores
                 </Link>
               </li>
               <li>
-                <Link href="/gestion-jugadores" className="text-sm hover:text-blue-500 transition-colors">
+                <Link
+                  href="/gestion-jugadores"
+                  className="text-sm hover:text-blue-500 transition-colors"
+                >
                   Gestión de Jugadores
                 </Link>
               </li>
@@ -62,13 +91,19 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center justify-center md:justify-start text-sm">
                 <Mail className="w-4 h-4 mr-2 text-blue-500" />
-                <a href="mailto:info@fccardedeu.com" className="hover:text-blue-500 transition-colors">
+                <a
+                  href="mailto:info@fccardedeu.com"
+                  className="hover:text-blue-500 transition-colors"
+                >
                   info@fccardedeu.com
                 </a>
               </li>
               <li className="flex items-center justify-center md:justify-start text-sm">
                 <Phone className="w-4 h-4 mr-2 text-blue-500" />
-                <a href="tel:+34900000000" className="hover:text-blue-500 transition-colors">
+                <a
+                  href="tel:+34900000000"
+                  className="hover:text-blue-500 transition-colors"
+                >
                   +34 900 000 000
                 </a>
               </li>
@@ -128,16 +163,26 @@ export default function Footer() {
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-center md:justify-between items-center text-center">
             <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} FC Cardedeu. Todos los derechos reservados.
+              © {new Date().getFullYear()} FC Cardedeu. Todos los derechos
+              reservados.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <Link href="/privacidad" className="text-sm text-gray-400 hover:text-blue-500 transition-colors">
+              <Link
+                href="/privacidad"
+                className="text-sm text-gray-400 hover:text-blue-500 transition-colors"
+              >
                 Política de Privacidad
               </Link>
-              <Link href="/cookies" className="text-sm text-gray-400 hover:text-blue-500 transition-colors">
+              <Link
+                href="/cookies"
+                className="text-sm text-gray-400 hover:text-blue-500 transition-colors"
+              >
                 Política de Cookies
               </Link>
-              <Link href="/legal" className="text-sm text-gray-400 hover:text-blue-500 transition-colors">
+              <Link
+                href="/legal"
+                className="text-sm text-gray-400 hover:text-blue-500 transition-colors"
+              >
                 Aviso Legal
               </Link>
             </div>
@@ -145,6 +190,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
-

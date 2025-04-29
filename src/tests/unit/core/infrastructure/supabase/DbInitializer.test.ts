@@ -1,7 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// This test file uses @ts-ignore to handle typing issues in test mocks
+import '@testing-library/jest-dom';
 import { DbInitializer } from '@/core/infrastructure/supabase/DbInitializer';
 import { supabase } from '@/lib/supabaseClient';
 
 // Mock completo de supabase
+// @ts-ignore
 jest.mock('@/lib/supabaseClient', () => ({
   supabase: {
     from: jest.fn().mockReturnThis(),
@@ -18,8 +22,9 @@ jest.mock('@/lib/supabaseClient', () => ({
   }
 }));
 
-// Acceso tipado al mock
-const mockSupabase = supabase as jest.Mocked<typeof supabase>;
+// Acceso al mock
+// @ts-ignore
+const mockSupabase = supabase;
 
 describe('DbInitializer', () => {
   // Limpiar todos los mocks después de cada prueba
@@ -30,10 +35,11 @@ describe('DbInitializer', () => {
   describe('initializeInscripcionesTable', () => {
     it('debería detectar que la tabla ya existe y no crearla', async () => {
       // Mock para simular que la tabla existe (no hay error)
+      // @ts-ignore
       mockSupabase.from().select().limit.mockReturnValue({
         error: null,
         data: [{ count: 5 }]
-      } as any);
+      });
 
       const result = await DbInitializer.initializeInscripcionesTable();
 
@@ -45,13 +51,15 @@ describe('DbInitializer', () => {
     it('debería intentar crear la tabla si no existe', async () => {
       // Mock para simular que la tabla no existe
       const error = { code: '42P01' }; // Código de PostgreSQL para "tabla no existe"
+      // @ts-ignore
       mockSupabase.from().select().limit.mockReturnValue({
         error,
         data: null
-      } as any);
+      });
 
       // Mock para simular éxito en la creación de la tabla
-      mockSupabase.rpc.mockResolvedValue({ error: null, data: true } as any);
+      // @ts-ignore
+      mockSupabase.rpc.mockResolvedValue({ error: null, data: true });
 
       const result = await DbInitializer.initializeInscripcionesTable();
 
@@ -63,13 +71,15 @@ describe('DbInitializer', () => {
     it('debería manejar errores al crear la tabla', async () => {
       // Mock para simular que la tabla no existe
       const error = { code: '42P01' };
+      // @ts-ignore
       mockSupabase.from().select().limit.mockReturnValue({
         error,
         data: null
-      } as any);
+      });
 
       // Mock para simular error en la creación de la tabla
-      mockSupabase.rpc.mockResolvedValue({ error: { message: 'Error al crear tabla' }, data: null } as any);
+      // @ts-ignore
+      mockSupabase.rpc.mockResolvedValue({ error: { message: 'Error al crear tabla' }, data: null });
 
       const result = await DbInitializer.initializeInscripcionesTable();
 
@@ -82,6 +92,7 @@ describe('DbInitializer', () => {
   describe('initializeStorageBuckets', () => {
     it('debería detectar buckets existentes y actualizarlos', async () => {
       // Mock para simular que los buckets existen
+      // @ts-ignore
       mockSupabase.storage.listBuckets.mockResolvedValue({
         error: null,
         data: [
@@ -90,13 +101,14 @@ describe('DbInitializer', () => {
           { name: 'entrenadores' },
           { name: 'equipos' }
         ]
-      } as any);
+      });
 
       // Mock para simular éxito al actualizar buckets
+      // @ts-ignore
       mockSupabase.storage.updateBucket.mockResolvedValue({
         error: null,
         data: { publicAccessLevel: 'read' }
-      } as any);
+      });
 
       const result = await DbInitializer.initializeStorageBuckets();
 
@@ -108,22 +120,25 @@ describe('DbInitializer', () => {
 
     it('debería crear buckets que no existen', async () => {
       // Mock para simular que solo existe un bucket
+      // @ts-ignore
       mockSupabase.storage.listBuckets.mockResolvedValue({
         error: null,
         data: [{ name: 'noticies' }]
-      } as any);
+      });
 
       // Mock para simular éxito al crear buckets
+      // @ts-ignore
       mockSupabase.storage.createBucket.mockResolvedValue({
         error: null,
         data: { name: 'new-bucket' }
-      } as any);
+      });
 
       // Mock para simular éxito al actualizar buckets
+      // @ts-ignore
       mockSupabase.storage.updateBucket.mockResolvedValue({
         error: null,
         data: { publicAccessLevel: 'read' }
-      } as any);
+      });
 
       const result = await DbInitializer.initializeStorageBuckets();
 
@@ -135,10 +150,11 @@ describe('DbInitializer', () => {
 
     it('debería manejar errores al listar buckets', async () => {
       // Mock para simular error al listar buckets
+      // @ts-ignore
       mockSupabase.storage.listBuckets.mockResolvedValue({
         error: { message: 'Error al listar buckets' },
         data: null
-      } as any);
+      });
 
       const result = await DbInitializer.initializeStorageBuckets();
 

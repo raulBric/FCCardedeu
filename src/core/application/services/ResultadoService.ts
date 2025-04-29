@@ -1,5 +1,5 @@
 import { ResultadoRepository } from '../../domain/repositories/ResultadoRepository';
-import { Resultado, CreateResultadoDTO, UpdateResultadoDTO } from '../../domain/models/Resultado';
+import { CreateResultadoDTO, UpdateResultadoDTO } from '../../domain/models/Resultado';
 
 export class ResultadoService {
   constructor(private resultadoRepository: ResultadoRepository) {}

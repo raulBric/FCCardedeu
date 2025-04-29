@@ -75,6 +75,9 @@ export function AnimateInView({
   useEffect(() => {
     if (!ref.current) return;
 
+    // Capture the current value of the ref
+    const currentRef = ref.current;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -93,12 +96,11 @@ export function AnimateInView({
       }
     );
 
-    observer.observe(ref.current);
+    observer.observe(currentRef);
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
+      // Use the captured value in the cleanup
+      observer.unobserve(currentRef);
     };
   }, [controls, once, threshold]);
 

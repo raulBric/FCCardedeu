@@ -1,9 +1,10 @@
 import { Equipo, EquipoDTO } from '../../../domain/models/Equipo';
 import { EquipoRepository } from '../../../domain/repositories/EquipoRepository';
 import { SupabaseClient } from '../SupabaseClient';
+import { SupabaseClient as SupabaseClientType } from '@supabase/supabase-js';
 
 export class SupabaseEquipoRepository implements EquipoRepository {
-  private supabase: any;
+  private supabase: SupabaseClientType;
 
   constructor() {
     this.supabase = SupabaseClient.getInstance().getClient();

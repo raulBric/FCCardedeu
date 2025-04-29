@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Search, ChevronRight, X, Filter, ArrowRight } from "lucide-react";
+import { Calendar, Search, X, Filter, ArrowRight } from "lucide-react";
 import { obtenerNoticias, Noticia } from "@/services/dashboardService";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -63,7 +63,7 @@ export default function NoticiasPage() {
         day: "numeric"
       };
       return new Date(dateString).toLocaleDateString("ca-ES", options);
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -87,7 +87,7 @@ export default function NoticiasPage() {
               Notícies
             </h1>
             <p className="text-gray-600">
-              Mantingues-te informat de totes les novetats del FC Cardedeu. Resultats, esdeveniments i molt més.
+              Mantingues-te informat de totes les novetats del FC Cardedeu. Resultats, esdeveniments i molt m&eacute;s.
             </p>
           </div>
           
@@ -171,7 +171,7 @@ export default function NoticiasPage() {
           ) : noticiasFiltradas.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg shadow-sm">
               <Filter className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No s'han trobat notícies</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">No s&apos;han trobat notícies</h2>
               <p className="text-gray-600 mb-6">
                 No hi ha notícies que coincideixin amb els teus criteris de cerca.
               </p>
@@ -196,10 +196,12 @@ export default function NoticiasPage() {
                   <Link href={`/noticies/${generarSlug(noticia.titulo, noticia.id)}`} className="block">
                     {noticia.imagen_url ? (
                       <div className="relative h-48 w-full overflow-hidden">
-                        <img 
+                        <Image 
                           src={noticia.imagen_url} 
                           alt={noticia.titulo}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          width={400}
+                          height={300}
                         />
                         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         {noticia.categoria && (

@@ -25,7 +25,6 @@ const InstagramIcon = () => (
 interface ShareButtonsProps {
   url: string;
   title: string;
-  description?: string;
   className?: string;
   showLabel?: boolean;
 }
@@ -33,7 +32,6 @@ interface ShareButtonsProps {
 export default function ShareButtons({
   url,
   title,
-  description = "",
   className = "",
   showLabel = true,
 }: ShareButtonsProps) {

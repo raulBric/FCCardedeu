@@ -2,6 +2,7 @@
 
 import { ReactNode, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes, ButtonHTMLAttributes } from "react";
 import { Loader2, X } from "lucide-react";
+import Image from "next/image";
 
 // Input Field
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -188,25 +189,25 @@ export function Card({ children, title, footer, className = "" }: CardProps) {
 }
 
 // DataTable Component
-interface DataTableProps {
+interface DataTableProps<T extends Record<string, unknown> = Record<string, unknown>> {
   columns: {
     key: string;
     header: string;
-    render?: (value: any, item: any) => ReactNode;
+    render?: (value: unknown, item: T) => ReactNode;
   }[];
-  data: any[];
-  onRowClick?: (item: any) => void;
+  data: T[];
+  onRowClick?: (item: T) => void;
   isLoading?: boolean;
   emptyMessage?: string;
 }
 
-export function DataTable({ 
+export function DataTable<T extends Record<string, unknown>>({ 
   columns, 
   data, 
   onRowClick, 
   isLoading = false,
   emptyMessage = "No hi ha dades disponibles" 
-}: DataTableProps) {
+}: DataTableProps<T>) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -246,8 +247,8 @@ export function DataTable({
                 {columns.map((column) => (
                   <td key={`${index}-${column.key}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {column.render
-                      ? column.render(item[column.key], item)
-                      : item[column.key]}
+                      ? column.render(item[column.key as keyof typeof item] as unknown, item)
+                      : (item[column.key as keyof typeof item] as React.ReactNode)}
                   </td>
                 ))}
               </tr>
@@ -321,7 +322,6 @@ export function FileUpload({
   error, 
   preview, 
   onClear,
-  className = "", 
   ...props 
 }: FileUploadProps) {
   return (
@@ -334,9 +334,11 @@ export function FileUpload({
         <div className="space-y-1 text-center">
           {preview ? (
             <div className="relative">
-              <img
+              <Image
                 src={preview}
                 alt="Preview"
+                width={200}
+                height={128}
                 className="mx-auto h-32 object-contain mb-2"
               />
               {onClear && (

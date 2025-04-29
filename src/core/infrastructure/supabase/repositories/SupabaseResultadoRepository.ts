@@ -1,9 +1,10 @@
 import { SupabaseClient } from '../SupabaseClient';
 import { ResultadoRepository } from '../../../domain/repositories/ResultadoRepository';
 import { Resultado, CreateResultadoDTO, UpdateResultadoDTO } from '../../../domain/models/Resultado';
+import { SupabaseClient as SupabaseClientType } from '@supabase/supabase-js';
 
 export class SupabaseResultadoRepository implements ResultadoRepository {
-  private supabase: any;
+  private supabase: SupabaseClientType;
 
   constructor() {
     this.supabase = SupabaseClient.getInstance().getClient();

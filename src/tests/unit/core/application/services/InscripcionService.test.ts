@@ -1,5 +1,5 @@
 import { InscripcionService } from '@/core/application/services/InscripcionService';
-import { Inscripcion, UpdateInscripcionEstadoDTO } from '@/core/domain/models/Inscripcion';
+import { Inscripcion, UpdateInscripcionEstadoDTO, PaymentInfo } from '@/core/domain/models/Inscripcion';
 
 describe('InscripcionService', () => {
   // Crear un mock del repositorio con todos los métodos necesarios
@@ -144,7 +144,7 @@ describe('InscripcionService', () => {
         estado: 'completada',
         temporada: '2024-2025',
         processed: true,
-        payment_info: dto.paymentInfo
+        payment_info: dto.paymentInfo as PaymentInfo
       };
       
       mockRepository.updateEstado.mockResolvedValue(inscripcionActualizada);
@@ -162,10 +162,18 @@ describe('InscripcionService', () => {
         estado: 'completada'
       };
       
-      // Simular error de política RLS
-      const rlsError = new Error('RLS policy violation');
+      // Definir un tipo específico para errores de PostgreSQL
+      type PostgrestErrorCode = '42501' | '23505' | '23503' | string;
+      
+      // Interfaz para representar un error de PostgreSQL con código
+      interface PostgrestError extends Error {
+        code: PostgrestErrorCode;
+      }
+      
+      // Crear el error directamente con el tipo correcto
+      const rlsError = new Error('RLS policy violation') as PostgrestError;
       rlsError.name = 'PostgrestError';
-      (rlsError as any).code = '42501'; // Código de error de política
+      rlsError.code = '42501'; // Código de error de política de seguridad
       
       mockRepository.updateEstado.mockRejectedValue(rlsError);
       

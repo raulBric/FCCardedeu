@@ -1,9 +1,10 @@
 import { Inscripcion, UpdateInscripcionEstadoDTO } from '../../../domain/models/Inscripcion';
 import { InscripcionRepository } from '../../../domain/repositories/InscripcionRepository';
 import { SupabaseClient } from '../SupabaseClient';
+import { SupabaseClient as SupabaseClientType } from '@supabase/supabase-js';
 
 export class SupabaseInscripcionRepository implements InscripcionRepository {
-  private supabase: any;
+  private supabase: SupabaseClientType;
 
   constructor() {
     this.supabase = SupabaseClient.getInstance().getClient();
@@ -46,7 +47,7 @@ export class SupabaseInscripcionRepository implements InscripcionRepository {
       console.log(`Actualizando inscripción ${id} a estado: ${estado}`);
       
       // Preparar los datos a actualizar
-      const updateData: any = { estado, processed };
+      const updateData: { estado: string; processed: boolean; payment_info?: unknown } = { estado, processed };
       
       // Si hay información de pago, la añadimos a los datos a actualizar
       if (paymentInfo) {

@@ -1,10 +1,10 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient as SupabaseClientType } from '@supabase/supabase-js';
 
 // Singleton para el cliente de Supabase
 export class SupabaseClient {
   private static instance: SupabaseClient;
-  private supabaseClient: any;
+  private supabaseClient: SupabaseClientType;
 
   private constructor() {
     // Usamos el cliente de componente para el front-end

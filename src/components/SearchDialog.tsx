@@ -6,10 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
+// Define interface for search results
+interface SearchResult {
+  id: number;
+  type: "noticia" | "equipo" | "jugador";
+  title: string;
+  url: string;
+}
+
 export function SearchDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Simular búsqueda con un retraso
@@ -25,10 +33,10 @@ export function SearchDialog() {
       // En un entorno real, aquí llamaríamos a un servicio de búsqueda
       setTimeout(() => {
         // Datos simulados para demostración
-        const mockResults = [
-          { id: 1, type: "noticia", title: "Victoria del primer equipo", url: "/noticies/victoria-primer-equipo" },
-          { id: 2, type: "equipo", title: "Primer Equip", url: "/primer-equip" },
-          { id: 3, type: "jugador", title: "Marc García", url: "/jugadores/marc-garcia" },
+        const mockResults: SearchResult[] = [
+          { id: 1, type: "noticia" as const, title: "Victoria del primer equipo", url: "/noticies/victoria-primer-equipo" },
+          { id: 2, type: "equipo" as const, title: "Primer Equip", url: "/primer-equip" },
+          { id: 3, type: "jugador" as const, title: "Marc García", url: "/jugadores/marc-garcia" },
         ].filter(item => 
           item.title.toLowerCase().includes(searchQuery.toLowerCase())
         );
@@ -101,7 +109,7 @@ export function SearchDialog() {
               ))
             ) : searchQuery.length >= 3 && !loading ? (
               <p className="text-center text-sm text-muted-foreground py-4">
-                No s'han trobat resultats per "{searchQuery}"
+                No s&apos;han trobat resultats per &quot;{searchQuery}&quot;
               </p>
             ) : searchQuery.length > 0 && searchQuery.length < 3 ? (
               <p className="text-center text-sm text-muted-foreground py-4">

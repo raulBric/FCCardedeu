@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   Plus, 
   Pencil, 
@@ -66,10 +67,12 @@ export default function PatrocinadorsPage() {
       render: (value: string, item: Patrocinador) => (
         <div className="w-16 h-16 relative rounded-md overflow-hidden border border-gray-200 bg-white">
           {value ? (
-            <img 
-              src={value} 
+            <Image 
+              src={value || '/placeholder-logo.png'} 
               alt={item.nombre} 
               className="w-full h-full object-contain p-1"
+              width={64}
+              height={64}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -125,7 +128,7 @@ export default function PatrocinadorsPage() {
     {
       key: "acciones",
       header: "Acciones",
-      render: (_: any, item: Patrocinador) => (
+      render: (_: unknown, item: Patrocinador) => (
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 
@@ -212,10 +215,12 @@ export default function PatrocinadorsPage() {
             return (
               <div className="flex flex-col items-center py-4">
                 <div className="w-32 h-32 relative rounded-md overflow-hidden border border-gray-200 mb-4 p-2">
-                  <img 
-                    src={principal.logo_url} 
+                  <Image 
+                    src={principal.logo_url || '/placeholder-logo.png'} 
                     alt={principal.nombre}
                     className="w-full h-full object-contain" 
+                    width={128}
+                    height={128}
                   />
                 </div>
                 
@@ -292,10 +297,12 @@ export default function PatrocinadorsPage() {
                       <div className="flex items-center">
                         <div className="w-8 h-8 mr-3 relative rounded overflow-hidden bg-white border border-gray-200">
                           {colab.logo_url ? (
-                            <img 
-                              src={colab.logo_url} 
+                            <Image 
+                              src={colab.logo_url || '/placeholder-logo.png'} 
                               alt={colab.nombre}
                               className="w-full h-full object-contain" 
+                              width={32}
+                              height={32}
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gray-100">

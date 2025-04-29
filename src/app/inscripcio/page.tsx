@@ -5,10 +5,9 @@ import type React from "react"
 import { useState, type ChangeEvent, type FormEvent, useRef } from "react"
 import Header from "@/components/Header"
 import { motion } from "framer-motion"
-import { ChevronRight, ChevronLeft, Check, CreditCard, AlertCircle, X, ChevronDown } from "lucide-react"
+import { ChevronRight, ChevronLeft, Check, CreditCard, AlertCircle, X } from "lucide-react"
 import Link from "next/link"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import type { Database } from "@/lib/database.types"
 
 interface FormData {
   playerName: string
@@ -233,18 +232,21 @@ export default function Page() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
-    // Validar el paso actual
-    if (!validateStep(3)) {
-      return
+    // Validar todos los pasos antes de enviar
+    for (let i = 1; i <= 4; i++) {
+      if (!validateStep(i)) {
+        setCurrentStep(i)
+        return
+      }
     }
 
     setIsSubmitting(true)
     setSubmitError(null)
 
     try {
-      // Usar conectar directamente con Supabase 
+      // Conexión con Supabase
       const supabase = createClientComponentClient()
-      
+
       // Configurar datos para la inserción
       const insertData = {
         player_name: formData.playerName,
@@ -269,22 +271,22 @@ export default function Page() {
         comments: formData.comments,
         accept_terms: formData.acceptTerms
       }
-      
+
       // Intento directo con Supabase (recomendado revisar políticas RLS)
       let finalData = null
       let insertSuccess = false
-      
+
       console.log('Intentando inserción directa a Supabase:', insertData)
-      
+
       // Usar la opción de supabaseKey para asegurar que se use la clave anónima completa
       const { data, error } = await supabase
         .from('inscripcions')
         .insert([insertData])
         .select()
-        
+
       if (error) {
         console.error('Error en inserción directa:', error)
-        
+
         // Mostrar más detalles del error para facilitar la depuración
         const errorDetails = {
           code: error.code || 'N/A',
@@ -293,7 +295,7 @@ export default function Page() {
           hint: error.hint || 'Sin pistas adicionales'
         }
         console.log('Detalles del error:', errorDetails)
-        
+
         // Mensaje de error más descriptivo
         setSubmitError(`Hi ha hagut un error en enviar les dades: ${error.message || 'Error desconocido'}. Si us plau, contacta amb el club.`)
       } else {
@@ -302,17 +304,17 @@ export default function Page() {
         insertSuccess = true
         console.log('Inscripción creada exitosamente:', data)
       }
-      
+
       // Procesar el resultado final
       if (insertSuccess) {
         console.log("Data inserted successfully:", finalData)
         setCurrentStep(4) // Mostrar confirmación
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error:", error)
       // Mostrar detalles del error para facilitar la depuración
-      const errorMessage = typeof error === 'object' ? 
-        (error.message || JSON.stringify(error)) : 
+      const errorMessage = typeof error === 'object' && error !== null ? 
+        ((error as {message?: string}).message || JSON.stringify(error)) : 
         String(error);
       
       console.log('Error completo:', error);
@@ -358,7 +360,7 @@ export default function Page() {
       <Header />
       <div className="bg-gray-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center text-red-600">Formulari d'Inscripció</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-center text-red-600">Formulari d&apos;Inscripció</h1>
 
           {/* Barra de progreso */}
           {currentStep < 4 && (
@@ -489,8 +491,8 @@ export default function Page() {
                         <option value="juvenil">Juvenil</option>
                         <option value="amateur">Amateur</option>
                       </select>
-                                          </div>
-                    <p className="text-xs text-gray-500 mt-1">Fes clic per seleccionar l'equip</p>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Fes clic per seleccionar l&apos;equip</p>
                   </div>
                   <div className={selectWrapperClass}>
                     <label className="block font-medium text-gray-700 mb-1">
@@ -516,7 +518,6 @@ export default function Page() {
                         <option value="XL">XL</option>
                         <option value="XXL">XXL</option>
                       </select>
-                      
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Fes clic per seleccionar la talla</p>
                   </div>
@@ -579,7 +580,6 @@ export default function Page() {
                       value={formData.contactPhone2}
                       onChange={handleChange}
                       className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -700,7 +700,6 @@ export default function Page() {
                         <option value="2">2</option>
                         <option value="3+">3 o més</option>
                       </select>
-                      
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Fes clic per seleccionar</p>
                   </div>
@@ -723,7 +722,6 @@ export default function Page() {
                         <option value="3">3 temporades</option>
                         <option value="4+">4 o més temporades</option>
                       </select>
-                      
                     </div>
                     <p className="text-xs text-gray-500 mt-1">Fes clic per seleccionar</p>
                   </div>
@@ -736,7 +734,7 @@ export default function Page() {
                       name="bankAccount"
                       value={formData.bankAccount}
                       onChange={handleChange}
-                      placeholder="ES00 0000 0000 0000 0000 0000"
+                      placeholder="ES00 0000 0000 0000 0000"
                       className={`w-full p-3 border ${errors.bankAccount ? "border-red-500" : "border-gray-300"} rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent`}
                       required
                     />
@@ -746,7 +744,7 @@ export default function Page() {
                       </p>
                     )}
                     <p className="text-xs text-gray-500 mt-1">
-                      Aquest compte s'utilitzarà per a la domiciliació de les quotes del club.
+                      Aquest compte s&apos;utilitzarà per a la domiciliació de les quotes del club.
                     </p>
                   </div>
                   <div className="md:col-span-2">
@@ -763,57 +761,57 @@ export default function Page() {
 
                 {/* Checkbox para aceptar términos */}
                 <div className="mt-6">
-  <div
-    className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 ${
-      errors.acceptTerms ? "border border-red-500 p-3 rounded-md bg-red-50" : ""
-    }`}
-  >
-    <div className="flex items-center">
-      <input
-        id="acceptTerms"
-        name="acceptTerms"
-        type="checkbox"
-        checked={formData.acceptTerms}
-        onChange={(e) => handleChange(e as any)}
-        className="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500 focus:ring-offset-0"
-        required
-      />
-    </div>
-    <div className="text-sm sm:text-base leading-5">
-      <label htmlFor="acceptTerms" className="font-medium text-gray-700">
-        Confirmo que he llegit i acceptat les{" "}
-        <button
-          type="button"
-          className="text-red-600 underline hover:text-red-800"
-          onClick={() => setShowModal(true)}
-        >
-          condicions d'inscripció
-        </button>{" "}
-        i la{" "}
-        <button
-          type="button"
-          className="text-red-600 underline hover:text-red-800"
-          onClick={() => setShowModal(true)}
-        >
-          política de protecció de dades
-        </button>{" "}
-        del FC Cardedeu. <span className="text-red-500">*</span>
-      </label>
-      {errors.acceptTerms && (
-        <p className="text-red-500 text-sm mt-1 flex items-center">
-          <AlertCircle className="w-4 h-4 mr-1" /> {errors.acceptTerms}
-        </p>
-      )}
-    </div>
-  </div>
-</div>
+                  <div
+                    className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 ${
+                      errors.acceptTerms ? "border border-red-500 p-3 rounded-md bg-red-50" : ""
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        id="acceptTerms"
+                        name="acceptTerms"
+                        type="checkbox"
+                        checked={formData.acceptTerms}
+                        onChange={(e) => handleChange(e as ChangeEvent<HTMLInputElement>)}
+                        className="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500 focus:ring-offset-0"
+                        required
+                      />
+                    </div>
+                    <div className="text-sm sm:text-base leading-5">
+                      <label htmlFor="acceptTerms" className="font-medium text-gray-700">
+                        Confirmo que he llegit i acceptat les{" "}
+                        <button
+                          type="button"
+                          className="text-red-600 underline hover:text-red-800"
+                          onClick={() => setShowModal(true)}
+                        >
+                          condicions d&apos;inscripció
+                        </button>{" "}
+                        i la{" "}
+                        <button
+                          type="button"
+                          className="text-red-600 underline hover:text-red-800"
+                          onClick={() => setShowModal(true)}
+                        >
+                          política de protecció de dades
+                        </button>{" "}
+                        del FC Cardedeu. <span className="text-red-500">*</span>
+                      </label>
+                      {errors.acceptTerms && (
+                        <p className="text-red-500 text-sm mt-1 flex items-center">
+                          <AlertCircle className="w-4 h-4 mr-1" /> {errors.acceptTerms}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
                 <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200 mt-6">
                   <h3 className="font-medium text-yellow-800 mb-2">Informació important</h3>
                   <p className="text-sm text-yellow-700">
-                    En enviar aquest formulari, acceptes les condicions d'inscripció del FC Cardedeu per a la temporada
+                    En enviar aquest formulari, acceptes les condicions d&apos;inscripció del FC Cardedeu per a la temporada
                     2024-2025. El pagament de la quota es realitzarà en un formulari separat al qual seràs redirigit
-                    després d'enviar aquesta inscripció.
+                    després d&apos;enviar aquesta inscripció.
                   </p>
                 </div>
 
@@ -882,7 +880,7 @@ export default function Page() {
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Inscripció enviada!</h2>
                 <p className="text-gray-600 mb-6">
-                  Hem rebut correctament la teva sol·licitud d'inscripció. Per completar el procés, has de realitzar el
+                  Hem rebut correctament la teva sol·licitud d&apos;inscripció. Per completar el procés, has de realitzar el
                   pagament de la quota.
                 </p>
 
@@ -890,7 +888,7 @@ export default function Page() {
                   <h3 className="font-medium text-blue-800 mb-2">Pròxims passos</h3>
                   <ol className="list-decimal pl-5 text-sm text-blue-700 space-y-1">
                     <li>Rebràs un correu electrònic de confirmació</li>
-                    <li>Realitza el pagament mitjançant l'enllaç a continuació</li>
+                    <li>Realitza el pagament mitjançant l&apos;enllaç a continuació</li>
                     <li>Un cop confirmat el pagament, la inscripció estarà completa</li>
                   </ol>
                 </div>
@@ -908,7 +906,7 @@ export default function Page() {
                     onClick={() => (window.location.href = "/")}
                     className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition"
                   >
-                    Tornar a l'inici
+                    Tornar a l&apos;inici
                   </button>
                 </div>
               </motion.div>
@@ -930,7 +928,7 @@ export default function Page() {
       {/* Encabezado del modal */}
       <div className="flex justify-between items-center p-4 sm:p-6 border-b bg-gray-100 rounded-t-lg">
         <h3 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">
-          Condicions d'inscripció i política de privacitat
+          Condicions d&apos;inscripció i política de privacitat
         </h3>
         <button
           type="button"
@@ -944,9 +942,9 @@ export default function Page() {
       {/* Contenido del modal */}
       <div className="p-4 sm:p-6">
         <div className="prose max-w-none text-sm sm:text-base">
-          <h4 className="text-base sm:text-lg font-semibold mb-2">1. Condicions d'inscripció</h4>
+          <h4 className="text-base sm:text-lg font-semibold mb-2">1. Condicions d&apos;inscripció</h4>
           <p className="mb-4">
-            En inscriure's al FC Cardedeu, el jugador i els seus tutors legals accepten les següents condicions:
+            En inscriure&apos;s al FC Cardedeu, el jugador i els seus tutors legals accepten les següents condicions:
           </p>
           <ul className="list-disc pl-5 mb-4 space-y-1">
             <li>Complir amb les normes internes del club.</li>
@@ -959,7 +957,7 @@ export default function Page() {
 
           <h4 className="text-base sm:text-lg font-semibold mb-2">2. Política de privacitat</h4>
           <p className="mb-4">
-            D'acord amb el que estableix el <span className="font-bold">Reglament General de Protecció de Dades (RGPD)</span>, l'informem que les
+            D&apos;acord amb el que estableix el <span className="font-bold">Reglament General de Protecció de Dades (RGPD)</span>, l&apos;informem que les
             dades personals facilitades seran tractades per FC Cardedeu amb la finalitat de gestionar la
             inscripció i participació en les activitats del club.
           </p>
@@ -973,9 +971,9 @@ export default function Page() {
             la seva supressió quan les dades ja no siguin necessàries.
           </p>
 
-          <h4 className="text-base sm:text-lg font-semibold mb-2">3. Drets d'imatge</h4>
+          <h4 className="text-base sm:text-lg font-semibold mb-2">3. Drets d&apos;imatge</h4>
           <p className="mb-4">
-            Amb la inscripció, s'autoritza al FC Cardedeu a utilitzar les imatges captades durant les activitats
+            Amb la inscripció, s&apos;autoritza al FC Cardedeu a utilitzar les imatges captades durant les activitats
             del club per a finalitats divulgatives en els canals oficials del club (web, xarxes socials,
             publicacions, etc.).
           </p>
@@ -990,7 +988,7 @@ export default function Page() {
           </p>
 
           <h4 className="text-base sm:text-lg font-semibold mb-2">5. Acceptació</h4>
-          <p>La inscripció al FC Cardedeu suposa l'acceptació d'aquestes condicions i normes del club.</p>
+          <p>La inscripció al FC Cardedeu suposa l&apos;acceptació d&apos;aquestes condicions i normes del club.</p>
         </div>
       </div>
 

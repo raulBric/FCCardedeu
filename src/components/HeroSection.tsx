@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -52,6 +52,21 @@ export default function HeroSection() {
     };
   }, []);
 
+  const stopAutoplay = useCallback(() => {
+    if (autoplayTimerRef.current) {
+      clearInterval(autoplayTimerRef.current);
+      autoplayTimerRef.current = null;
+    }
+  }, []);
+
+  const startAutoplay = useCallback(() => {
+    stopAutoplay(); // Limpiar cualquier intervalo existente
+
+    autoplayTimerRef.current = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % imatges.length);
+    }, 5000);
+  }, [stopAutoplay, setCurrentIndex]);
+  
   // Configurar autoplay solo en el cliente
   useEffect(() => {
     if (isClient) {
@@ -76,43 +91,28 @@ export default function HeroSection() {
         );
       };
     }
-  }, [isClient]);
-
-  const startAutoplay = () => {
-    stopAutoplay(); // Limpiar cualquier intervalo existente
-
-    autoplayTimerRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % imatges.length);
-    }, 5000);
-  };
-
-  const stopAutoplay = () => {
-    if (autoplayTimerRef.current) {
-      clearInterval(autoplayTimerRef.current);
-      autoplayTimerRef.current = null;
-    }
-  };
+  }, [isClient, startAutoplay, stopAutoplay]);
 
   // Navegación
   const handlePrev = () => {
     stopAutoplay();
     setCurrentIndex((prev) => (prev - 1 + imatges.length) % imatges.length);
     // Reiniciar autoplay después de un tiempo
-    setTimeout(startAutoplay, 10000);
+    setTimeout(() => startAutoplay(), 10000);
   };
 
   const handleNext = () => {
     stopAutoplay();
     setCurrentIndex((prev) => (prev + 1) % imatges.length);
     // Reiniciar autoplay después de un tiempo
-    setTimeout(startAutoplay, 10000);
+    setTimeout(() => startAutoplay(), 10000);
   };
 
   const handleDotClick = (index: number) => {
     stopAutoplay();
     setCurrentIndex(index);
     // Reiniciar autoplay después de un tiempo
-    setTimeout(startAutoplay, 10000);
+    setTimeout(() => startAutoplay(), 10000);
   };
 
   // Función para manejar gestos táctiles

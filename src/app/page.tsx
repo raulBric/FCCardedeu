@@ -9,6 +9,7 @@ import AdBanner from "@/components/AdBanner";
 import Damm from "@/assets/Patrocinadores/damm.png";
 
 export default function Home() {
+
   return (
     <>
       <Header />

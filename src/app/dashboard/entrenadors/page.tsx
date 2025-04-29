@@ -322,7 +322,7 @@ export default function EntrenadorsPage() {
                   id="nom" 
                   value={newEntrenador.nom} 
                   onChange={e => setNewEntrenador({...newEntrenador, nom: e.target.value})}
-                  placeholder="Nom de l'entrenador"
+                  placeholder="Nom de l&apos;entrenador"
                   required
                 />
                 

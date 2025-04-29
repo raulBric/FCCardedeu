@@ -1,9 +1,10 @@
 import { Jugador, JugadorDTO, JugadorEquip } from '../../../domain/models/Jugador';
 import { JugadorRepository } from '../../../domain/repositories/JugadorRepository';
 import { SupabaseClient } from '../SupabaseClient';
+import { SupabaseClient as SupabaseClientType } from '@supabase/supabase-js';
 
 export class SupabaseJugadorRepository implements JugadorRepository {
-  private supabase: any;
+  private supabase: SupabaseClientType;
 
   constructor() {
     this.supabase = SupabaseClient.getInstance().getClient();
@@ -108,7 +109,7 @@ export class SupabaseJugadorRepository implements JugadorRepository {
     
     // Si ya existe, actualizar
     if (existing) {
-      const updateData: any = {};
+      const updateData: { dorsal?: string; posicio?: string } = {};
       if (dorsal) updateData.dorsal = dorsal;
       if (posicio) updateData.posicio = posicio;
       

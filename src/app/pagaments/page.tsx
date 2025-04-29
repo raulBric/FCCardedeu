@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { loadStripe } from "@stripe/stripe-js"
 import { Elements } from "@stripe/react-stripe-js"
 import { ArrowLeft, CreditCard, Loader2 } from "lucide-react"
@@ -20,7 +20,6 @@ export default function PaymentPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   // Obtener el ID de inscripción de los parámetros de la URL
@@ -72,7 +71,7 @@ export default function PaymentPage() {
           setClientSecret("pi_3NpTMtKZ6R0djt0A0RAg1234_secret_rFUQwg8V9P2BNgBZUGtVyXcQq")
           setLoading(false)
         }, 1500)
-      } catch (err) {
+      } catch {
         setError("Hi ha hagut un error carregant les dades de pagament. Si us plau, torna-ho a provar més tard.")
         setLoading(false)
       }
@@ -195,7 +194,7 @@ export default function PaymentPage() {
                   </Elements>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-red-600">No s'ha pogut carregar el formulari de pagament.</p>
+                    <p className="text-red-600">No s&apos;ha pogut carregar el formulari de pagament.</p>
                     <Button onClick={() => window.location.reload()} className="mt-4">
                       Tornar a intentar
                     </Button>

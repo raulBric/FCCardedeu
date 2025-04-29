@@ -2,25 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   Plus, 
   Pencil, 
   Trash2, 
   UserRound, 
   Calendar,
-  Medal,
-  ShieldAlert,
-  Users,
-  ChevronRight,
-  AlertCircle,
-  Filter
+  Users
 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Button, DataTable, SelectField } from "@/components/dashboard/FormComponents";
+import { Button, DataTable } from "@/components/dashboard/FormComponents";
 import Card from "@/components/dashboard/Card";
 // Importar del adaptador en lugar del servicio directo
 import { obtenerJugadors, eliminarJugador } from "@/adapters/ServiceAdapters";
-import { Jugador } from "@/core/domain/models/Jugador";
 
 // Interfaz para unificar los tipos del modelo antiguo y nuevo
 type JugadorUI = {
@@ -137,7 +132,7 @@ export default function JugadoresPage() {
         month: '2-digit',
         year: 'numeric'
       });
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -169,10 +164,12 @@ export default function JugadoresPage() {
       render: (value: string, item: JugadorUI) => (
         <div className="w-12 h-12 relative rounded-full overflow-hidden border border-gray-200 bg-white">
           {value ? (
-            <img 
+            <Image 
               src={value} 
               alt={`${item.nombre} ${item.apellidos}`} 
               className="w-full h-full object-cover"
+              width={48}
+              height={48}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -238,7 +235,7 @@ export default function JugadoresPage() {
     {
       key: "acciones",
       header: "Accions",
-      render: (_: any, item: JugadorUI) => (
+      render: (_: string, item: JugadorUI) => (
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 

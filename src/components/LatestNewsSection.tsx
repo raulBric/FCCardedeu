@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import Image from "next/image"
 import Link from "next/link"
+import Image from "next/image"
 import { motion, useInView } from "framer-motion"
 import { Calendar, ChevronRight, Clock, ArrowRight } from "lucide-react"
 import { obtenerNoticias, Noticia } from "@/services/dashboardService"
@@ -185,6 +185,7 @@ export default function LatestNewsSection({
     return new Date(dateString).toLocaleDateString("ca-ES", options)
   }
 
+
   return (
     <section ref={sectionRef} className="py-16 bg-gray-50 relative overflow-hidden">
       {/* Elementos decorativos sutiles */}
@@ -287,9 +288,11 @@ export default function LatestNewsSection({
                 >
                   <Link href={`/noticies/${item.slug}`} className="block relative">
                     <div className="relative h-48 w-full overflow-hidden">
-                      <img
+                      <Image
                         src={item.imageUrl || "/placeholder.svg"}
                         alt={item.title}
+                        width={400}
+                        height={300}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>

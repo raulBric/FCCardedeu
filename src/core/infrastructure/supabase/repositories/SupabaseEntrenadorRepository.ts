@@ -1,9 +1,10 @@
 import { Entrenador, EntrenadorDTO, EntrenadorEquip } from '../../../domain/models/Entrenador';
 import { EntrenadorRepository } from '../../../domain/repositories/EntrenadorRepository';
 import { SupabaseClient } from '../SupabaseClient';
+import { SupabaseClient as SupabaseClientType } from '@supabase/supabase-js';
 
 export class SupabaseEntrenadorRepository implements EntrenadorRepository {
-  private supabase: any;
+  private supabase: SupabaseClientType;
 
   constructor() {
     this.supabase = SupabaseClient.getInstance().getClient();
@@ -161,7 +162,7 @@ export class SupabaseEntrenadorRepository implements EntrenadorRepository {
     if (error) throw error;
     
     // Transformar resultados para incluir el nombre del equipo directamente
-    const equiposConNombre = (data || []).map((item: EntrenadorEquip) => {
+    const equiposConNombre = (data || []).map((item: EntrenadorEquip & { equip?: { nom?: string } }) => {
       return {
         ...item,
         equipo_nombre: item.equip?.nom || ''

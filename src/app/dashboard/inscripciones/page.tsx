@@ -98,7 +98,8 @@ export default function InscripcionesPage() {
         created_at: inscripcion.created_at || new Date().toISOString(),
         estado: inscripcion.estado || "pendiente",
         temporada: inscripcion.temporada || "2024-2025",
-        site_access: (inscripcion as any).site_access || "",
+        // Use a defined string type instead of 'any' cast for site_access
+        site_access: (inscripcion as Inscripcion & { site_access?: string }).site_access || "",
         // Mapear información de pago si existe y es compatible
         payment_info: originalPaymentInfo ? {
           payment_id: originalPaymentInfo.reference ?? undefined,

@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
 import { Loader2 } from "lucide-react"
 
@@ -14,7 +13,6 @@ interface CheckoutFormProps {
 export default function CheckoutForm({ amount }: CheckoutFormProps) {
   const stripe = useStripe()
   const elements = useElements()
-  const router = useRouter()
 
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -50,7 +48,7 @@ export default function CheckoutForm({ amount }: CheckoutFormProps) {
         setIsLoading(false)
       }
       // Si no hay error, el usuario será redirigido a return_url
-    } catch (err) {
+    } catch {
       setMessage("Hi ha hagut un error processant el pagament")
       setIsLoading(false)
     }
@@ -88,7 +86,7 @@ export default function CheckoutForm({ amount }: CheckoutFormProps) {
       </button>
 
       <div className="text-xs text-gray-500 text-center mt-4">
-        En fer clic a "Pagar", acceptes els{" "}
+        En fer clic a &quot;Pagar&quot;, acceptes els{" "}
         <a href="/termes" className="text-red-700 hover:underline">
           Termes i Condicions
         </a>{" "}

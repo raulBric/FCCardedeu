@@ -2,7 +2,8 @@
 
 import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Save, ArrowLeft, Upload, X, Camera, User, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { Save, ArrowLeft, User, Loader2 } from "lucide-react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { 
   Button, 
@@ -16,16 +17,38 @@ import {
 import { 
   obtenerJugador,
   actualizarJugador, 
-  subirArchivo, 
-  Jugador 
+  subirArchivo 
 } from "@/services/dashboardService";
+import { Jugador as JugadorDB } from "@/core/domain/models/Jugador";
+
+// Interfaz UI para el formulario (usando nombres en español para compatibilidad)
+interface JugadorUI {
+  id?: number;
+  nombre: string;           // nom
+  apellidos: string;        // cognoms
+  fecha_nacimiento: string; // data_naixement
+  dni_nie: string;
+  posicion: string;         // posicio
+  dorsal?: number;
+  imagen_url: string;       // imatge_url
+  categoria: string;
+  equipo: string;           // equip
+  temporada: string;
+  email: string;
+  telefono: string;         // telefon
+  direccion: string;        // direccio
+  ciudad: string;           // poblacio
+  codigo_postal: string;    // codi_postal
+  observaciones: string;    // observacions
+  activo: boolean;          // estat
+};
 
 export default function EditarJugadorPage() {
   const router = useRouter();
   const params = useParams();
   const jugadorId = parseInt(params.id as string);
   
-  const [formData, setFormData] = useState<Omit<Jugador, 'id'>>({
+  const [formData, setFormData] = useState<Omit<JugadorUI, 'id'>>({
     nombre: '',
     apellidos: '',
     fecha_nacimiento: '',
@@ -57,31 +80,35 @@ export default function EditarJugadorPage() {
     async function loadJugador() {
       try {
         setIsLoading(true);
-        const jugador = await obtenerJugador(jugadorId);
+        const jugadorDB = await obtenerJugador(jugadorId);
         
-        if (jugador) {
-          setFormData({
-            nombre: jugador.nombre,
-            apellidos: jugador.apellidos,
-            fecha_nacimiento: jugador.fecha_nacimiento,
-            posicion: jugador.posicion,
-            dorsal: jugador.dorsal,
-            imagen_url: jugador.imagen_url || '',
-            categoria: jugador.categoria,
-            equipo: jugador.equipo,
-            temporada: jugador.temporada,
-            dni_nie: jugador.dni_nie,
-            email: jugador.email || '',
-            telefono: jugador.telefono || '',
-            direccion: jugador.direccion || '',
-            ciudad: jugador.ciudad || '',
-            codigo_postal: jugador.codigo_postal || '',
-            observaciones: jugador.observaciones || '',
-            activo: jugador.activo
-          });
+        if (jugadorDB) {
+          // Convertir del formato DB al formato UI (catalán a español)
+          const jugadorUI: JugadorUI = {
+            id: jugadorDB.id,
+            nombre: jugadorDB.nom,
+            apellidos: jugadorDB.cognoms,
+            fecha_nacimiento: jugadorDB.data_naixement || '',
+            posicion: jugadorDB.posicio || '',
+            dorsal: jugadorDB.id, // Placeholder o valor a definir
+            imagen_url: jugadorDB.imatge_url || '',
+            categoria: jugadorDB.categoria || '',
+            equipo: '', // Placeholder o valor a definir
+            temporada: '2024-2025', // Valor por defecto
+            dni_nie: jugadorDB.dni_nie || '',
+            email: jugadorDB.email || '',
+            telefono: jugadorDB.telefon || '',
+            direccion: jugadorDB.direccio || '',
+            ciudad: jugadorDB.poblacio || '',
+            codigo_postal: jugadorDB.codi_postal || '',
+            observaciones: jugadorDB.observacions || '',
+            activo: jugadorDB.estat === 'actiu'
+          };
           
-          if (jugador.imagen_url) {
-            setFotoPreview(jugador.imagen_url);
+          setFormData(jugadorUI);
+          
+          if (jugadorDB.imatge_url) {
+            setFotoPreview(jugadorDB.imatge_url);
           }
         } else {
           router.push('/dashboard/jugadors');
@@ -194,13 +221,26 @@ export default function EditarJugadorPage() {
         fotoUrl = await subirArchivo('jugadores', fileName, fotoFile);
       }
       
-      // Actualizar jugador con la URL de la foto
-      const jugadorActualizado = {
-        ...formData,
-        imagen_url: fotoUrl
+      // Convertir del formato UI al formato DB (español a catalán)
+      const jugadorData: Partial<JugadorDB> = {
+        nom: formData.nombre,
+        cognoms: formData.apellidos,
+        data_naixement: formData.fecha_nacimiento,
+        dni_nie: formData.dni_nie,
+        posicio: formData.posicion,
+        imatge_url: fotoUrl,
+        categoria: formData.categoria,
+        email: formData.email,
+        telefon: formData.telefono,
+        direccio: formData.direccion,
+        poblacio: formData.ciudad,
+        codi_postal: formData.codigo_postal,
+        observacions: formData.observaciones,
+        estat: formData.activo ? 'actiu' : 'inactiu'
       };
       
-      await actualizarJugador(jugadorId, jugadorActualizado);
+      // Actualizar jugador
+      await actualizarJugador(jugadorId, jugadorData);
       
       // Redirigir a la lista de jugadores
       router.push('/dashboard/jugadors');
@@ -545,10 +585,12 @@ export default function EditarJugadorPage() {
               <div className="flex flex-col items-center p-4">
                 <div className="w-40 h-40 rounded-full overflow-hidden mb-4 bg-gray-100 border border-gray-200 relative">
                   {fotoPreview ? (
-                    <img 
+                    <Image 
                       src={fotoPreview} 
                       alt="Preview del jugador" 
                       className="w-full h-full object-cover"
+                      width={160}
+                      height={160}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -577,10 +619,12 @@ export default function EditarJugadorPage() {
                 <div className="flex items-center p-2 bg-gray-50 rounded-md">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 mr-3">
                     {fotoPreview ? (
-                      <img 
+                      <Image 
                         src={fotoPreview} 
                         alt="Preview" 
                         className="w-full h-full object-cover"
+                        width={40}
+                        height={40}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

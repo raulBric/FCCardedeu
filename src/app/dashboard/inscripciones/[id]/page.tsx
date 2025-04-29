@@ -15,10 +15,8 @@ import {
   MapPin,
   FileText,
   School,
-  AlertTriangle,
   Loader2,
   CreditCard,
-  BookOpen,
   Building2,
   Tag,
   UserCircle
@@ -90,7 +88,7 @@ export default function DetalleInscripcionPage() {
     if (inscripcionId) {
       loadInscripcion();
     }
-  }, [inscripcionId]);
+  }, [inscripcionId, router]);
   
   // Formatear fechas
   const formatDate = (dateString: string) => {
@@ -101,7 +99,7 @@ export default function DetalleInscripcionPage() {
         month: '2-digit',
         year: 'numeric'
       });
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -110,9 +108,7 @@ export default function DetalleInscripcionPage() {
   const handleChangeEstado = async (estado: 'pendiente' | 'completada' | 'rechazada') => {
     if (!inscripcion) return;
     
-    // Guardamos el estado anterior para poder revertir si falla
-    const estadoAnterior = inscripcion.estado;
-    const processedAnterior = inscripcion.processed;
+    // El estado se actualiza de forma optimista, no necesitamos revertir
     
     // Primero actualizamos la UI inmediatamente (enfoque optimista)
     setInscripcion({
@@ -153,23 +149,21 @@ export default function DetalleInscripcionPage() {
     try {
       setActionLoading('procesar');
       
-      // Aseguramos que inscripcion cumple con el contrato esperado por InscripcionDashboard
-      // Proporcionando todos los campos requeridos con valores por defecto si es necesario
+      // Crear un objeto compatible con InscripcionDashboard con todos los campos requeridos
       const inscripcionCompleta = {
         ...inscripcion,
         id: inscripcion.id || 0,                         // Asegurar que id es un número
         estado: inscripcion.estado || 'pendiente',
         processed: inscripcion.processed || false,
-        temporada: inscripcion.temporada || '2024-2025',
+        temporada: inscripcion.temporada || '2024-2025',  // Valor por defecto si no existe
         created_at: inscripcion.created_at || new Date().toISOString(),
         accept_terms: inscripcion.accept_terms || true,
-        image_rights: false,                            // Campo obligatorio en InscripcionDashboard
-        exit_authorization: false                       // Campo obligatorio en InscripcionDashboard
-      } as const;
+        image_rights: false,                           // Campo obligatorio en InscripcionDashboard
+        exit_authorization: false                      // Campo obligatorio en InscripcionDashboard
+      };
       
-      // Usamos as any para evitar errores de tipo - esto es seguro porque ya hemos asegurado 
-      // que todos los campos requeridos están presentes
-      await crearJugadorDesdeInscripcion(inscripcionCompleta as any);
+      // Llamamos a la función con el tipo correcto
+      await crearJugadorDesdeInscripcion(inscripcionCompleta);
       
       // Actualizar estado local
       setInscripcion({
@@ -322,7 +316,7 @@ export default function DetalleInscripcionPage() {
         {inscripcion.processed && (
           <div className="mt-3 px-3 py-2 bg-green-100 text-green-800 rounded-lg flex items-center">
             <CheckCircle className="h-5 w-5 mr-2" />
-            <span>Aquesta inscripció ja ha estat processada i s'ha creat un jugador a la base de dades.</span>
+            <span>Aquesta inscripció ja ha estat processada i s&apos;ha creat un jugador a la base de dades.</span>
           </div>
         )}
       </div>
@@ -467,7 +461,7 @@ export default function DetalleInscripcionPage() {
               <div className="flex items-start">
                 <Building2 className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Accés a les instal·lacions</p>
+                  <p className="text-sm font-medium text-gray-900">Accés a les instal&apos;lacions</p>
                   <p className="mt-1 text-base">{inscripcion.site_access}</p>
                 </div>
               </div>
@@ -545,8 +539,8 @@ export default function DetalleInscripcionPage() {
       <div className="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
         <h3 className="font-medium text-blue-800 mb-2">Informació sobre la creació de jugadors</h3>
         <p className="text-sm text-blue-700">
-          En fer clic a "Crear jugador", el sistema generarà automàticament un jugador a la base de dades amb les dades d'aquesta inscripció. 
-          La inscripció es marcarà com a processada. Un cop creat, podràs editar les dades del jugador des de la secció "Jugadors".
+          En fer clic a &quot;Crear jugador&quot;, el sistema generarà automàticament un jugador a la base de dades amb les dades d&apos;aquesta inscripció. 
+          La inscripció es marcarà com a processada. Un cop creat, podràs editar les dades del jugador des de la secció &quot;Jugadors&quot;.
         </p>
       </div>
     </DashboardLayout>

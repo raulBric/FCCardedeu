@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Eye, Pencil, Trash2, AlertTriangle, Calendar, FileEdit, AlertCircle, ChevronRight } from "lucide-react";
+import { Plus, Eye, Pencil, Trash2, Calendar, FileEdit, AlertCircle, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable, Button } from "@/components/dashboard/FormComponents";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { obtenerNoticias, eliminarNoticia, Noticia } from "@/services/dashboardService";
 import { generarSlug } from "@/utils/slugUtils";
 
@@ -60,7 +61,7 @@ export default function NoticiasPage() {
         month: '2-digit',
         year: 'numeric'
       });
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -73,10 +74,12 @@ export default function NoticiasPage() {
       render: (value: string, item: Noticia) => (
         <div className="w-16 h-16 relative rounded-md overflow-hidden border border-gray-200 bg-white">
           {value ? (
-            <img 
+            <Image 
               src={value} 
               alt={item.titulo} 
               className="w-full h-full object-cover"
+              width={64}
+              height={64}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -132,7 +135,7 @@ export default function NoticiasPage() {
     {
       key: "acciones",
       header: "Accions",
-      render: (_: any, item: Noticia) => (
+      render: (_: unknown, item: Noticia) => (
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 
@@ -223,10 +226,12 @@ export default function NoticiasPage() {
                 >
                   <div className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                     {noticia.imagen_url ? (
-                      <img 
+                      <Image 
                         src={noticia.imagen_url} 
                         alt={noticia.titulo}
                         className="w-full h-full object-cover" 
+                        width={80}
+                        height={80}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">

@@ -1,18 +1,22 @@
 import { EntrenadorDetalleClient } from './components/EntrenadorDetalleClient';
-import { Metadata } from 'next';
 
-type PageParams = { id: string };
-
-export async function generateMetadata({ params }: { params: PageParams }): Promise<Metadata> {
-  const { id } = params;
-  return {
-    title: `Detall Entrenador ${id} - FC Cardedeu`,
-    description: `Gestió de l'entrenador ${id} i els seus equips`
-  };
+// Use the most basic pattern for Next.js 15 App Router
+export default async function Page({ params }: { params: { id: string } }) {
+  // Extract the ID from the URL params
+  const id = params.id;
+  
+  // Render the client component
+  return <EntrenadorDetalleClient id={id} />;
 }
 
-// Server component that satisfies Next.js 15 page requirements
-export default function EntrenadorDetallePage({ params }: { params: PageParams }) {
-  // Usar el id directamente del params
-  return <EntrenadorDetalleClient id={params.id} />;
+// Metadata generation
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { id: string } 
+}) {
+  return {
+    title: `Detall Entrenador ${params.id} - FC Cardedeu`,
+    description: `Gestió de l'entrenador ${params.id} i els seus equips`
+  };
 }

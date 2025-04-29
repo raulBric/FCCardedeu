@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Upload, X, Loader2, Check, Eye, Edit } from "lucid
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import Image from "next/image";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button, FormField } from "@/components/dashboard/FormComponents";
 import Card from "@/components/dashboard/Card";
@@ -126,7 +127,7 @@ export default function CrearNoticiaPage() {
       
       // Paso 2: Intentar subir directamente sin verificar el bucket
       // Si el bucket no existe se creará automáticamente con la RLS correcta
-      const { data, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from(bucket)
         .upload(path, file, {
           cacheControl: '3600',
@@ -152,7 +153,7 @@ export default function CrearNoticiaPage() {
             }
             
             // Reintentar la subida
-            const { data: retryData, error: retryError } = await supabase.storage
+            const { error: retryError } = await supabase.storage
               .from(bucket)
               .upload(path, file, {
                 cacheControl: '3600',
@@ -194,8 +195,9 @@ export default function CrearNoticiaPage() {
       
       console.log('URL generada manualmente (respaldo):', publicUrl);
       return publicUrl;
-    } catch (error: any) {
-      const errorMsg = error?.message || error?.error_description || JSON.stringify(error) || 'Error desconocido';
+    } catch (error: unknown) {
+      const typedError = error as { message?: string; error_description?: string };
+      const errorMsg = typedError?.message || typedError?.error_description || JSON.stringify(error) || 'Error desconocido';
       console.error(`Error detallado al subir archivo a ${bucket}/${path}:`, errorMsg);
       throw new Error(`Error al pujar la imatge: ${errorMsg}`);
     }
@@ -354,10 +356,10 @@ export default function CrearNoticiaPage() {
       });
       
       // Crear noticia
+      // Note: fecha is handled automatically by the backend service
       const noticia = await crearNoticia({
         titulo: formData.titulo,
         contenido: formData.contenido,
-        fecha: formData.fecha,
         autor: formData.autor || undefined,
         categoria: formData.categoria || undefined,
         destacada: formData.destacada,
@@ -532,7 +534,7 @@ export default function CrearNoticiaPage() {
                             className="p-1 hover:bg-gray-200 rounded" 
                             title="Cita"
                           >
-                            <span className="font-mono">""</span>
+                            <span className="font-mono">&quot;&quot;</span>
                           </button>
                           <button 
                             type="button" 
@@ -585,7 +587,7 @@ export default function CrearNoticiaPage() {
                           onClick={() => setIsPreview(false)}
                           className="text-red-600 hover:text-red-800 text-sm font-medium focus:outline-none"
                         >
-                          Tornar a l'editor
+                          Tornar a l&apos;editor
                         </button>
                       </div>
                       
@@ -617,10 +619,12 @@ export default function CrearNoticiaPage() {
                         {/* Imagen principal */}
                         {(imagePreview || formData.imagen_url) && (
                           <div className="mb-6 rounded-lg overflow-hidden">
-                            <img 
+                            <Image 
                               src={imagePreview || formData.imagen_url} 
                               alt={formData.titulo} 
                               className="w-full h-auto object-cover max-h-[400px]" 
+                              width={800}
+                              height={400}
                             />
                           </div>
                         )}
@@ -653,10 +657,12 @@ export default function CrearNoticiaPage() {
                 <div className="flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6">
                   {imagePreview ? (
                     <div className="relative">
-                      <img 
+                      <Image 
                         src={imagePreview} 
                         alt="Vista previa" 
                         className="max-h-64 rounded" 
+                        width={300}
+                        height={200}
                       />
                       <button 
                         type="button"

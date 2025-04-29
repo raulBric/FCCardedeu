@@ -20,7 +20,7 @@ import { SearchDialog } from "@/components/SearchDialog";
 // import { Input } from "@/components/ui/input"
 
 // Menu structure with categories
-const menuStructure = [
+const menuStructure: MenuStructureItem[] = [
   { name: "Inici", path: "/", type: "link" as const },
   {
     name: "Equips",

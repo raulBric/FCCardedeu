@@ -65,7 +65,7 @@ export default function NoticiaDetallePage() {
         day: "numeric"
       };
       return new Date(dateString).toLocaleDateString("ca-ES", options);
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -171,10 +171,9 @@ export default function NoticiaDetallePage() {
             {/* Botones para compartir */}
             <div className="mt-4 mb-6 py-3 border-t border-b border-gray-200">
               <ShareButtons 
-                url={`/noticies/${generarSlug(noticia.titulo, noticia.id)}`}
+                url={`${process.env.NEXT_PUBLIC_SITE_URL}/noticies/${slug}`}
                 title={noticia.titulo}
-                description={noticia.contenido.substring(0, 150).replace(/\n/g, ' ').trim() + '...'}
-                className="justify-center md:justify-start"
+                className="mt-6"
               />
             </div>
           </div>
@@ -183,9 +182,11 @@ export default function NoticiaDetallePage() {
           {noticia.imagen_url && (
             <div className="max-w-3xl mx-auto mb-10 rounded-lg overflow-hidden shadow-lg">
               <div className="relative h-[250px] sm:h-[300px] md:h-[400px] w-full">
-                <img 
+                <Image 
                   src={noticia.imagen_url} 
                   alt={noticia.titulo}
+                  width={1200}
+                  height={800}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -220,14 +221,25 @@ export default function NoticiaDetallePage() {
                 rehypePlugins={[rehypeRaw]}
                 components={{
                   // Personalizar componentes de ReactMarkdown
-                  h1: ({node, ...props}) => <h1 className="border-b border-gray-200 pb-3" {...props} />,
-                  h2: ({node, ...props}) => <h2 className="border-b border-gray-100 pb-2" {...props} />,
-                  a: ({node, ...props}) => <a className="relative inline-block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-red-500 after:scale-x-0 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left" {...props} />,
-                  img: ({node, ...props}) => <img className="transition-all duration-300 hover:shadow-lg" {...props} />,
-                  blockquote: ({node, ...props}) => (
+                  h1: ({...props}) => <h1 className="border-b border-gray-200 pb-3" {...props} />,
+                  h2: ({...props}) => <h2 className="border-b border-gray-100 pb-2" {...props} />,
+                  a: ({...props}) => <a className="relative inline-block after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-red-500 after:scale-x-0 after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left" {...props} />,
+                  img: ({src, alt}) => {
+                    // Convert string to number for width/height props required by Next.js Image
+                    return (
+                      <Image 
+                        src={src || ''} 
+                        alt={alt || 'Imatge de la notícia'} 
+                        width={800} 
+                        height={600} 
+                        className="transition-all duration-300 hover:shadow-lg"
+                      />
+                    );
+                  },
+                  blockquote: ({...props}) => (
                     <blockquote className="bg-gray-50 rounded-r-lg overflow-hidden" {...props} />
                   ),
-                  code: ({node, className, ...props}: any) => {
+                  code: ({className, ...props}: {className?: string, children?: React.ReactNode}) => {
                     // Para detectar si es un código en línea o un bloque de código
                     const isInline = !className || !className.includes('language-');
                     return isInline ? 
@@ -257,9 +269,11 @@ export default function NoticiaDetallePage() {
                     <Link href={`/noticies/${generarSlug(relacionada.titulo, relacionada.id)}`}>
                       {relacionada.imagen_url && (
                         <div className="relative h-48 w-full overflow-hidden">
-                          <img 
+                          <Image 
                             src={relacionada.imagen_url} 
                             alt={relacionada.titulo}
+                            width={400}
+                            height={300}
                             className="w-full h-full object-cover"
                           />
                           {relacionada.categoria && (
@@ -301,7 +315,6 @@ export default function NoticiaDetallePage() {
             <ShareButtons 
               url={`/noticies/${generarSlug(noticia.titulo, noticia.id)}`}
               title={noticia.titulo}
-              description={noticia.contenido.substring(0, 150).replace(/\n/g, ' ').trim() + '...'}
               showLabel={false}
             />
           </div>

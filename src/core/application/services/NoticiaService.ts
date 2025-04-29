@@ -1,5 +1,5 @@
 import { NoticiaRepository } from '../../domain/repositories/NoticiaRepository';
-import { Noticia, CreateNoticiaDTO, UpdateNoticiaDTO } from '../../domain/models/Noticia';
+import { CreateNoticiaDTO, UpdateNoticiaDTO } from '../../domain/models/Noticia';
 
 export class NoticiaService {
   constructor(private noticiaRepository: NoticiaRepository) {}

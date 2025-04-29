@@ -57,7 +57,7 @@ export default function PaymentConfirmationPage() {
         const data = await response.json();
         setStatus(data.status);
         */
-      } catch (err) {
+      } catch {
         setStatus("failure")
         setLoading(false)
       }
@@ -76,7 +76,7 @@ export default function PaymentConfirmationPage() {
           </CardHeader>
           <CardContent className="flex flex-col items-center">
             <Loader2 className="h-16 w-16 text-red-700 animate-spin mb-6" />
-            <p className="text-gray-600">Si us plau, espera mentre verifiquem l'estat del teu pagament...</p>
+            <p className="text-gray-600">Si us plau, espera mentre verifiquem l&apos;estat del teu pagament...</p>
           </CardContent>
         </Card>
       </div>
@@ -120,7 +120,7 @@ export default function PaymentConfirmationPage() {
 
                 <div className="pt-4 flex flex-col space-y-3">
                   <Button asChild>
-                    <Link href="/">Tornar a l'inici</Link>
+                    <Link href="/">Tornar a l&apos;inici</Link>
                   </Button>
 
                   <Button variant="outline" asChild>
@@ -150,7 +150,7 @@ export default function PaymentConfirmationPage() {
             <div className="space-y-6">
               <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200">
                 <p className="text-yellow-800 text-sm">
-                  El teu pagament està sent processat. T'enviarem un correu electrònic quan es completi.
+                  El teu pagament està sent processat. T&apos;enviarem un correu electrònic quan es completi.
                 </p>
               </div>
 
@@ -161,7 +161,7 @@ export default function PaymentConfirmationPage() {
 
                 <div className="pt-4">
                   <Button asChild>
-                    <Link href="/">Tornar a l'inici</Link>
+                    <Link href="/">Tornar a l&apos;inici</Link>
                   </Button>
                 </div>
               </div>
@@ -180,7 +180,7 @@ export default function PaymentConfirmationPage() {
             <XCircle className="h-16 w-16 text-red-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-red-700">Error en el pagament</CardTitle>
-          <CardDescription>No s'ha pogut completar el pagament</CardDescription>
+          <CardDescription>No s&apos;ha pogut completar el pagament</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">

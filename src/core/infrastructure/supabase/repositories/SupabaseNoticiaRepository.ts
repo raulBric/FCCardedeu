@@ -1,9 +1,10 @@
 import { SupabaseClient } from '../SupabaseClient';
 import { NoticiaRepository } from '../../../domain/repositories/NoticiaRepository';
 import { Noticia, CreateNoticiaDTO, UpdateNoticiaDTO } from '../../../domain/models/Noticia';
+import { SupabaseClient as SupabaseClientType } from '@supabase/supabase-js';
 
 export class SupabaseNoticiaRepository implements NoticiaRepository {
-  private supabase: any;
+  private supabase: SupabaseClientType;
 
   constructor() {
     this.supabase = SupabaseClient.getInstance().getClient();

@@ -7,7 +7,6 @@ import {
   Newspaper, 
   Trophy, 
   Users, 
-  BarChart3, 
   Calendar, 
   Eye, 
   ArrowRight,
@@ -19,6 +18,7 @@ import {
   Bell,
   Pencil
 } from "lucide-react";
+import Image from "next/image";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/dashboard/FormComponents";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
@@ -30,8 +30,7 @@ import {
   Noticia, 
   Resultado, 
   Patrocinador, 
-  InscripcionDashboard as Inscripcion, 
-  Jugador 
+  InscripcionDashboard as Inscripcion
 } from "@/adapters/ServiceAdapters";
 // Usar el adaptador en lugar del servicio eliminado
 import { obtenerJugadors } from "@/adapters/ServiceAdapters";
@@ -61,8 +60,7 @@ export default function DashboardPage() {
     isLoading: boolean;
   }
 
-  // Tipo para los tamaños de botón
-  type ButtonSize = 'sm' | 'md' | 'lg';
+
 
   const [stats, setStats] = useState<DashboardStats>({
     noticias: 0,
@@ -131,7 +129,7 @@ export default function DashboardPage() {
         }
         
         // 5. Cargar jugadores (usando el nuevo servicio jugadorService)
-        let jugadores: Record<string, any>[] = [];
+        let jugadores: Record<string, unknown>[] = [];
         try {
           // Obtener jugadores de la nueva tabla 'jugadors'
           const jugadorsData = await obtenerJugadors();
@@ -289,10 +287,12 @@ export default function DashboardPage() {
               {/* Imagen destacada */}
               {stats.ultimaNoticia?.imagen_url ? (
                 <div className="w-full h-40 relative">
-                  <img 
+                  <Image 
                     src={stats.ultimaNoticia.imagen_url} 
                     alt={stats.ultimaNoticia.titulo}
                     className="w-full h-full object-cover" 
+                    width={500}
+                    height={160}
                   />
                   {stats.ultimaNoticia.destacada && (
                     <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-medium px-2 py-1 rounded-sm">

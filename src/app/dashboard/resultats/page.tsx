@@ -7,10 +7,8 @@ import {
   Pencil, 
   Trash2, 
   Calendar, 
-  Clock,
   Trophy,
   Shield,
-  ArrowRight,
   ChevronRight,
   AlertCircle
 } from "lucide-react";
@@ -70,7 +68,7 @@ export default function ResultadosPage() {
         month: '2-digit',
         year: 'numeric'
       });
-    } catch (error) {
+    } catch {
       return dateString;
     }
   };
@@ -90,7 +88,7 @@ export default function ResultadosPage() {
     {
       key: "partido",
       header: "Partit",
-      render: (_: any, item: Resultado) => (
+      render: (_: unknown, item: Resultado) => (
         <div>
           <div className="flex items-center justify-between mb-1 font-medium">
             <span className="text-right w-5/12 truncate">{item.equipo_local}</span>
@@ -128,7 +126,7 @@ export default function ResultadosPage() {
     {
       key: "resultado",
       header: "Resultat",
-      render: (_: any, item: Resultado) => (
+      render: (_: unknown, item: Resultado) => (
         <div className="text-center">
           {item.completado ? (
             <div>
@@ -162,7 +160,7 @@ export default function ResultadosPage() {
     {
       key: "acciones",
       header: "Accions",
-      render: (_: any, item: Resultado) => (
+      render: (_: unknown, item: Resultado) => (
         <div className="flex items-center space-x-2">
           <Button 
             variant="outline" 

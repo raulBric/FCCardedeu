@@ -4,6 +4,7 @@ import type React from "react";
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { Menu, X, ChevronDown, Instagram } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,9 +72,11 @@ type MenuStructureItem =
   | { name: string; type: "dropdown"; items: MenuItem[] };
 
 export default function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Debounced scroll handler for better performance
   const handleScroll = useCallback(() => {
@@ -86,12 +89,29 @@ export default function Header() {
 
     // Add scroll event listener with passive option for better performance
     window.addEventListener("scroll", handleScroll, { passive: true });
+    
+    // Resetear el estado de navegación cuando cambiamos de página
+    const handleRouteChange = () => {
+      setIsNavigating(false);
+    };
+    
+    // Este código se ejecuta cuando la navegación se completa
+    router.prefetch('/');
+    menuStructure.forEach(item => {
+      if (item.type === 'link') {
+        router.prefetch(item.path);
+      } else if (item.items) {
+        item.items.forEach(subItem => {
+          router.prefetch(subItem.path);
+        });
+      }
+    });
 
     return () => {
       document.body.style.overflow = "auto";
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [isMenuOpen, handleScroll]);
+  }, [isMenuOpen, handleScroll, router]);
 
   // Handle keyboard navigation with proper type
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -132,6 +152,7 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.path}
+                prefetch={true}
                 className="text-white font-medium px-3 py-2 rounded-md hover:bg-red-700 transition-colors whitespace-nowrap"
               >
                 {item.name}
@@ -154,6 +175,7 @@ export default function Header() {
                     <DropdownMenuItem key={subItem.name} asChild>
                       <Link
                         href={subItem.path}
+                        prefetch={true}
                         className="text-white hover:bg-white/10 cursor-pointer"
                       >
                         {subItem.name}
@@ -222,14 +244,14 @@ export default function Header() {
       </AnimatePresence>
 
       {/* Mobile Menu */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isMenuOpen && (
           <motion.div
             className="fixed inset-0 bg-club-primary flex flex-col z-40"
             initial={{ opacity: 0, y: "-100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "-100%" }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             {/* Club Shield/Logo at the top center */}
             <div className="flex justify-center">
@@ -257,13 +279,22 @@ export default function Header() {
                 {menuStructure.map((item) => (
                   <li key={item.name}>
                     {item.type === "link" ? (
-                      <Link
-                        href={item.path}
+                      <a
+                        href="#"
                         className="text-white text-2xl font-bold block py-2"
-                        onClick={() => setIsMenuOpen(false)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (isNavigating) return;
+                          setIsNavigating(true);
+                          setIsMenuOpen(false);
+                          // Pequeño delay para permitir la animación de cierre
+                          setTimeout(() => {
+                            router.push(item.path);
+                          }, 10);
+                        }}
                       >
                         {item.name}
-                      </Link>
+                      </a>
                     ) : (
                       <div className="space-y-4">
                         <h3 className="text-white/70 text-lg font-medium">
@@ -272,13 +303,22 @@ export default function Header() {
                         <ul className="pl-4 space-y-3 border-l border-white/20">
                           {item.items?.map((subItem) => (
                             <li key={subItem.name}>
-                              <Link
-                                href={subItem.path}
+                              <a
+                                href="#"
                                 className="text-white text-xl font-medium block py-1"
-                                onClick={() => setIsMenuOpen(false)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (isNavigating) return;
+                                  setIsNavigating(true);
+                                  setIsMenuOpen(false);
+                                  // Pequeño delay para permitir la animación de cierre
+                                  setTimeout(() => {
+                                    router.push(subItem.path);
+                                  }, 10);
+                                }}
                               >
                                 {subItem.name}
-                              </Link>
+                              </a>
                             </li>
                           ))}
                         </ul>

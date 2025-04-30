@@ -8,6 +8,7 @@ import { motion } from "framer-motion"
 import { ChevronRight, ChevronLeft, Check, CreditCard, AlertCircle, X } from "lucide-react"
 import Link from "next/link"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { configurarTablaInscripcions } from "@/services/configurarTablaInscripcions"
 
 interface FormData {
   playerName: string
@@ -39,6 +40,19 @@ interface FormErrors {
   email2?: string
   bankAccount?: string
   acceptTerms?: string
+  playerName?: string
+  birthDate?: string
+  healthCard?: string
+  team?: string
+  parentName?: string
+  contactPhone1?: string
+  address?: string
+  city?: string
+  postalCode?: string
+  school?: string
+  shirtSize?: string
+  siblingsInClub?: string
+  seasonsInClub?: string
 }
 
 export default function Page() {
@@ -192,33 +206,93 @@ export default function Page() {
     let isValid = true
 
     if (step === 1) {
-      if (formData.playerDNI && !validateDNI(formData.playerDNI) && !validateNIE(formData.playerDNI)) {
+      // Obligatorios
+      if (!formData.playerName.trim()) {
+        newErrors.playerName = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.birthDate.trim()) {
+        newErrors.birthDate = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.playerDNI.trim()) {
+        newErrors.playerDNI = "Aquest camp és obligatori"
+        isValid = false
+      } else if (!validateDNI(formData.playerDNI) && !validateNIE(formData.playerDNI)) {
         newErrors.playerDNI = "El DNI o NIE no és vàlid"
+        isValid = false
+      }
+      if (!formData.healthCard.trim()) {
+        newErrors.healthCard = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.team.trim()) {
+        newErrors.team = "Aquest camp és obligatori"
         isValid = false
       }
     }
 
     if (step === 2) {
-      if (formData.email1 && !validateEmail(formData.email1)) {
+      if (!formData.parentName.trim()) {
+        newErrors.parentName = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.contactPhone1.trim()) {
+        newErrors.contactPhone1 = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.email1.trim()) {
+        newErrors.email1 = "Aquest camp és obligatori"
+        isValid = false
+      } else if (!validateEmail(formData.email1)) {
         newErrors.email1 = "El correu electrònic no és vàlid"
         isValid = false
       }
-
       if (formData.email2 && !validateEmail(formData.email2)) {
         newErrors.email2 = "El correu electrònic no és vàlid"
+        isValid = false
+      }
+      if (!formData.address.trim()) {
+        newErrors.address = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.city.trim()) {
+        newErrors.city = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.postalCode.trim()) {
+        newErrors.postalCode = "Aquest camp és obligatori"
         isValid = false
       }
     }
 
     if (step === 3) {
-      if (formData.bankAccount) {
+      if (!formData.school.trim()) {
+        newErrors.school = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.shirtSize.trim()) {
+        newErrors.shirtSize = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.siblingsInClub.trim()) {
+        newErrors.siblingsInClub = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.seasonsInClub.trim()) {
+        newErrors.seasonsInClub = "Aquest camp és obligatori"
+        isValid = false
+      }
+      if (!formData.bankAccount.trim()) {
+        newErrors.bankAccount = "Aquest camp és obligatori"
+        isValid = false
+      } else {
         const cleanIBAN = formData.bankAccount.replace(/\s/g, "").toUpperCase()
         if (!validateIBAN(cleanIBAN)) {
           newErrors.bankAccount = "El número IBAN no és vàlid"
           isValid = false
         }
       }
-
       if (!formData.acceptTerms) {
         newErrors.acceptTerms = "Has d'acceptar les condicions per continuar"
         isValid = false
@@ -244,6 +318,9 @@ export default function Page() {
     setSubmitError(null)
 
     try {
+      // Asegurarse de que la tabla existe (creación perezosa)
+      await configurarTablaInscripcions()
+
       // Conexión con Supabase
       const supabase = createClientComponentClient()
 
@@ -272,44 +349,20 @@ export default function Page() {
         accept_terms: formData.acceptTerms
       }
 
-      // Intento directo con Supabase (recomendado revisar políticas RLS)
-      let finalData = null
-      let insertSuccess = false
-
-      console.log('Intentando inserción directa a Supabase:', insertData)
-
-      // Usar la opción de supabaseKey para asegurar que se use la clave anónima completa
-      const { data, error } = await supabase
-        .from('inscripcions')
-        .insert([insertData])
-        .select()
+      // Inserción mediante función RPC para sortear RLS y centralitzar la lógica
+      const { data, error } = await supabase.rpc('insert_inscripcio', {
+        new_row: insertData,
+      })
 
       if (error) {
-        console.error('Error en inserción directa:', error)
-
-        // Mostrar más detalles del error para facilitar la depuración
-        const errorDetails = {
-          code: error.code || 'N/A',
-          message: error.message || 'Sin mensaje',
-          details: error.details || 'Sin detalles',
-          hint: error.hint || 'Sin pistas adicionales'
-        }
-        console.log('Detalles del error:', errorDetails)
-
-        // Mensaje de error más descriptivo
-        setSubmitError(`Hi ha hagut un error en enviar les dades: ${error.message || 'Error desconocido'}. Si us plau, contacta amb el club.`)
-      } else {
-        // Éxito
-        finalData = data
-        insertSuccess = true
-        console.log('Inscripción creada exitosamente:', data)
+        console.error('Error en inserción vía RPC:', error)
+        const errorMessage = error.message || error.details || 'Error desconegut'
+        setSubmitError(`Hi ha hagut un error en enviar les dades: ${errorMessage}. Si us plau, contacta amb el club.`)
+        return
       }
 
-      // Procesar el resultado final
-      if (insertSuccess) {
-        console.log("Data inserted successfully:", finalData)
-        setCurrentStep(4) // Mostrar confirmación
-      }
+      console.log('Inserción vía RPC correcta:', data)
+      setCurrentStep(4)
     } catch (error: unknown) {
       console.error("Error:", error)
       // Mostrar detalles del error para facilitar la depuración
@@ -917,95 +970,94 @@ export default function Page() {
 
       {/* Modal de términos y condiciones */}
       {showModal && (
-  <div
-    className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-    onClick={handleClickOutside}
-  >
-    <div
-      ref={modalRef}
-      className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 sm:mx-4"
-    >
-      {/* Encabezado del modal */}
-      <div className="flex justify-between items-center p-4 sm:p-6 border-b bg-gray-100 rounded-t-lg">
-        <h3 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">
-          Condicions d&apos;inscripció i política de privacitat
-        </h3>
-        <button
-          type="button"
-          className="text-gray-400 hover:text-gray-500 focus:outline-none"
-          onClick={() => setShowModal(false)}
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={handleClickOutside}
         >
-          <X className="w-6 h-6" />
-        </button>
-      </div>
+          <div
+            ref={modalRef}
+            className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 sm:mx-4"
+          >
+            {/* Encabezado del modal */}
+            <div className="flex justify-between items-center p-4 sm:p-6 border-b bg-gray-100 rounded-t-lg">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800 text-center sm:text-left">
+                Condicions d&apos;inscripció i política de privacitat
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                onClick={() => setShowModal(false)}
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
 
-      {/* Contenido del modal */}
-      <div className="p-4 sm:p-6">
-        <div className="prose max-w-none text-sm sm:text-base">
-          <h4 className="text-base sm:text-lg font-semibold mb-2">1. Condicions d&apos;inscripció</h4>
-          <p className="mb-4">
-            En inscriure&apos;s al FC Cardedeu, el jugador i els seus tutors legals accepten les següents condicions:
-          </p>
-          <ul className="list-disc pl-5 mb-4 space-y-1">
-            <li>Complir amb les normes internes del club.</li>
-            <li>Assistir regularment als entrenaments i partits.</li>
-            <li>Mantenir una actitud respectuosa amb companys, rivals, àrbitres i entrenadors.</li>
-            <li>Abonar les quotes establertes en els terminis fixats.</li>
-            <li>Participar en les activitats organitzades pel club.</li>
-            <li>Cuidar el material i les instal·lacions del club.</li>
-          </ul>
+            {/* Contenido del modal */}
+            <div className="p-4 sm:p-6">
+              <div className="prose max-w-none text-sm sm:text-base">
+                <h4 className="text-base sm:text-lg font-semibold mb-2">1. Condicions d&apos;inscripció</h4>
+                <p className="mb-4">
+                  En inscriure&apos;s al FC Cardedeu, el jugador i els seus tutors legals accepten les següents condicions:
+                </p>
+                <ul className="list-disc pl-5 mb-4 space-y-1">
+                  <li>Complir amb les normes internes del club.</li>
+                  <li>Assistir regularment als entrenaments i partits.</li>
+                  <li>Mantenir una actitud respectuosa amb companys, rivals, àrbitres i entrenadors.</li>
+                  <li>Abonar les quotes establertes en els terminis fixats.</li>
+                  <li>Participar en les activitats organitzades pel club.</li>
+                  <li>Cuidar el material i les instal·lacions del club.</li>
+                </ul>
 
-          <h4 className="text-base sm:text-lg font-semibold mb-2">2. Política de privacitat</h4>
-          <p className="mb-4">
-            D&apos;acord amb el que estableix el <span className="font-bold">Reglament General de Protecció de Dades (RGPD)</span>, l&apos;informem que les
-            dades personals facilitades seran tractades per FC Cardedeu amb la finalitat de gestionar la
-            inscripció i participació en les activitats del club.
-          </p>
-          <p className="mb-4">
-            Les dades es conservaran mentre es mantingui la relació amb el club i no se sol·liciti la seva
-            supressió. No es cediran a tercers excepte en els casos en què existeixi una obligació legal.
-          </p>
-          <p className="mb-4">
-            Vostè té dret a obtenir confirmació sobre si a FC Cardedeu estem tractant les seves dades personals,
-            per tant té dret a accedir a les seves dades personals, rectificar les dades inexactes o sol·licitar
-            la seva supressió quan les dades ja no siguin necessàries.
-          </p>
+                <h4 className="text-base sm:text-lg font-semibold mb-2">2. Política de privacitat</h4>
+                <p className="mb-4">
+                  D&apos;acord amb el que estableix el <span className="font-bold">Reglament General de Protecció de Dades (RGPD)</span>, l&apos;informem que les
+                  dades personals facilitades seran tractades per FC Cardedeu amb la finalitat de gestionar la
+                  inscripció i participació en les activitats del club.
+                </p>
+                <p className="mb-4">
+                  Les dades es conservaran mentre es mantingui la relació amb el club i no se sol·liciti la seva
+                  supressió. No es cediran a tercers excepte en els casos en què existeixi una obligació legal.
+                </p>
+                <p className="mb-4">
+                  Vostè té dret a obtenir confirmació sobre si a FC Cardedeu estem tractant les seves dades personals,
+                  per tant té dret a accedir a les seves dades personals, rectificar les dades inexactes o sol·licitar
+                  la seva supressió quan les dades ja no siguin necessàries.
+                </p>
 
-          <h4 className="text-base sm:text-lg font-semibold mb-2">3. Drets d&apos;imatge</h4>
-          <p className="mb-4">
-            Amb la inscripció, s&apos;autoritza al FC Cardedeu a utilitzar les imatges captades durant les activitats
-            del club per a finalitats divulgatives en els canals oficials del club (web, xarxes socials,
-            publicacions, etc.).
-          </p>
+                <h4 className="text-base sm:text-lg font-semibold mb-2">3. Drets d&apos;imatge</h4>
+                <p className="mb-4">
+                  Amb la inscripció, s&apos;autoritza al FC Cardedeu a utilitzar les imatges captades durant les activitats
+                  del club per a finalitats divulgatives en els canals oficials del club (web, xarxes socials,
+                  publicacions, etc.).
+                </p>
 
-          <h4 className="text-base sm:text-lg font-semibold mb-2">4. Quotes i pagaments</h4>
-          <p className="mb-4">
-            La inscripció al club implica el compromís de pagament de les quotes establertes. El no pagament de
-            les quotes pot suposar la baixa del jugador.
-          </p>
-          <p className="mb-4">
-            Les quotes es cobraran mitjançant domiciliació bancària en els terminis establerts pel club.
-          </p>
+                <h4 className="text-base sm:text-lg font-semibold mb-2">4. Quotes i pagaments</h4>
+                <p className="mb-4">
+                  La inscripció al club implica el compromís de pagament de les quotes establertes. El no pagament de
+                  les quotes pot suposar la baixa del jugador.
+                </p>
+                <p className="mb-4">
+                  Les quotes es cobraran mitjançant domiciliació bancària en els terminis establerts pel club.
+                </p>
 
-          <h4 className="text-base sm:text-lg font-semibold mb-2">5. Acceptació</h4>
-          <p>La inscripció al FC Cardedeu suposa l&apos;acceptació d&apos;aquestes condicions i normes del club.</p>
+                <h4 className="text-base sm:text-lg font-semibold mb-2">5. Acceptació</h4>
+                <p>La inscripció al FC Cardedeu suposa l&apos;acceptació d&apos;aquestes condicions i normes del club.</p>
+              </div>
+            </div>
+
+            {/* Pie del modal */}
+            <div className="border-t p-4 sm:p-6 flex justify-end bg-gray-100 rounded-b-lg">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition focus:outline-none"
+              >
+                Entès i accepto
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Pie del modal */}
-      <div className="border-t p-4 sm:p-6 flex justify-end bg-gray-100 rounded-b-lg">
-        <button
-          type="button"
-          onClick={() => setShowModal(false)}
-          className="px-4 sm:px-6 py-2 sm:py-3 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition focus:outline-none"
-        >
-          Entès i accepto
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </>
   )
 }
-

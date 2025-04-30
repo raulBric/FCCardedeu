@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+// import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { 
   ArrowLeft, 
   CheckCircle, 
@@ -25,7 +26,6 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/dashboard/FormComponents";
 import Card from "@/components/dashboard/Card";
 import { 
-  obtenerInscripcion, 
   actualizarEstadoInscripcion, 
   crearJugadorDesdeInscripcion
 } from "@/adapters/ServiceAdapters";
@@ -70,25 +70,91 @@ export default function DetalleInscripcionPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   
-  // Cargar inscripción
+  // Estado para manejar errores
+  const [error, setError] = useState<string | null>(null);
+  
+  // No usamos createClientComponentClient directamente porque causa problemas con RLS
+
+  // Cargar inscripción directamente desde Supabase
   useEffect(() => {
     async function loadInscripcion() {
       try {
         setIsLoading(true);
-        const data = await obtenerInscripcion(inscripcionId);
-        setInscripcion(data);
-      } catch (error) {
-        console.error("Error al cargar inscripción:", error);
-        router.push('/dashboard/inscripciones');
+        setError(null);
+
+        // Validar ID
+        if (isNaN(inscripcionId)) {
+          throw new Error(`ID de inscripción no válido: ${params.id}`);
+        }
+
+        console.log(`Intentando cargar inscripción con ID: ${inscripcionId}`);
+      
+        // Usar el mismo cliente que funciona en la lista principal
+        const { supabase } = await import('@/lib/supabaseClient');
+      
+        // Consulta directa a Supabase - Exactamente igual que en dashboard/inscripciones/page.tsx
+        const { data, error } = await supabase
+          .from('inscripcions')
+          .select('*')
+          .eq('id', inscripcionId)
+          .single();
+      
+        console.log("Respuesta de Supabase:", data ? "Datos encontrados" : "No hay datos", "Error:", error);
+      
+        if (error) {
+          console.error("Error de Supabase:", error);
+          throw error;
+        }
+      
+        if (!data) {
+          throw new Error(`No s'ha trobat cap inscripció amb ID: ${inscripcionId}`);
+        }
+
+        // Normalizar datos con valores por defecto.
+        const inscripcionNormalizada: Inscripcion = {
+          id: data.id ?? inscripcionId,
+          player_name: data.player_name ?? '',
+          birth_date: data.birth_date ?? '',
+          player_dni: data.player_dni ?? '',
+          health_card: data.health_card ?? '',
+          team: data.team ?? '',
+          parent_name: data.parent_name ?? '',
+          contact_phone1: data.contact_phone1 ?? '',
+          contact_phone2: data.contact_phone2 ?? '',
+          alt_contact: data.alt_contact ?? '',
+          email1: data.email1 ?? '',
+          email2: data.email2 ?? '',
+          address: data.address ?? '',
+          city: data.city ?? '',
+          postal_code: data.postal_code ?? '',
+          school: data.school ?? '',
+          shirt_size: data.shirt_size ?? '',
+          siblings_in_club: data.siblings_in_club ?? '',
+          seasons_in_club: data.seasons_in_club ?? '',
+          bank_account: data.bank_account ?? '',
+          comments: data.comments ?? '',
+          accept_terms: data.accept_terms ?? false,
+          created_at: data.created_at,
+          estado: data.estado ?? 'pendiente',
+          temporada: data.temporada ?? '2024-2025',
+          processed: data.processed ?? false,
+          site_access: data.site_access ?? ''
+        };
+
+        setInscripcion(inscripcionNormalizada);
+      } catch (err) {
+        console.error('Error al cargar inscripción:', err);
+        const msg = err instanceof Error ? err.message : 'Error desconegut';
+        setError(msg);
       } finally {
         setIsLoading(false);
       }
     }
-    
+
     if (inscripcionId) {
       loadInscripcion();
     }
-  }, [inscripcionId, router]);
+  }, [inscripcionId, params.id]);
   
   // Formatear fechas
   const formatDate = (dateString: string) => {
@@ -193,6 +259,42 @@ export default function DetalleInscripcionPage() {
     );
   }
   
+  // Mostrar error si existe
+  if (error) {
+    return (
+      <DashboardLayout 
+        title="Error al carregar inscripció" 
+        description="S'ha produït un error en carregar les dades"
+      >
+        <div className="p-8">
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <XCircle className="h-5 w-5 text-red-500" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-red-800">Error al carregar les dades</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>{error}</p>
+                </div>
+                <div className="mt-4 bg-red-100 p-2 rounded-md">
+                  <p className="text-xs font-mono text-red-800">ID inscripció: {inscripcionId}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <Button 
+            variant="primary" 
+            onClick={() => window.location.href = '/dashboard/inscripciones'}
+            iconLeft={<ArrowLeft className="h-4 w-4" />}
+          >
+            Tornar a inscripcions
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+  
   if (!inscripcion) {
     return (
       <DashboardLayout 
@@ -204,7 +306,7 @@ export default function DetalleInscripcionPage() {
           <p className="text-gray-600 mb-6">La inscripció que busques no existeix o ha estat eliminada.</p>
           <Button 
             variant="outline" 
-            onClick={() => router.push('/dashboard/inscripciones')}
+            onClick={() => window.location.href = '/dashboard/inscripciones'}
             iconLeft={<ArrowLeft className="h-4 w-4" />}
           >
             Tornar a inscripcions
@@ -219,40 +321,43 @@ export default function DetalleInscripcionPage() {
       title={`Inscripció de ${inscripcion.player_name}`} 
       description="Detall de la inscripció rebuda"
     >
-      <div className="p-6 bg-white rounded-lg shadow mb-6 border border-gray-200">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">{inscripcion.player_name}</h1>
-            <p className="text-gray-500 flex items-center">
-              <Calendar className="h-4 w-4 mr-1" />
-              {formatDate(inscripcion.created_at || '')}
+      <div className="p-4 md:p-6 bg-white rounded-lg shadow mb-4 md:mb-6 border border-gray-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1 break-words">{inscripcion.player_name}</h1>
+            <div className="text-gray-500 flex flex-wrap items-center gap-2">
+              <span className="flex items-center">
+                <Calendar className="h-4 w-4 mr-1 flex-shrink-0" />
+                {formatDate(inscripcion.created_at || '')}
+              </span>
               
-              <span className="mx-2">•</span>
+              <span className="hidden sm:inline mx-2">•</span>
               
               {inscripcion.estado === 'pendiente' && (
-                <span className="flex items-center text-yellow-600 font-medium">
-                  <Clock className="h-4 w-4 mr-1" /> Pendent
+                <span className="flex items-center text-yellow-600 font-medium whitespace-nowrap">
+                  <Clock className="h-4 w-4 mr-1 flex-shrink-0" /> Pendent
                 </span>
               )}
               {inscripcion.estado === 'completada' && (
-                <span className="flex items-center text-green-600 font-medium">
-                  <CheckCircle className="h-4 w-4 mr-1" /> Completada {inscripcion.processed && "(Jugador creat)"}
+                <span className="flex items-center text-green-600 font-medium whitespace-nowrap">
+                  <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" /> Completada {inscripcion.processed && "(Jugador creat)"}
                 </span>
               )}
               {inscripcion.estado === 'rechazada' && (
-                <span className="flex items-center text-red-600 font-medium">
-                  <XCircle className="h-4 w-4 mr-1" /> Rebutjada
+                <span className="flex items-center text-red-600 font-medium whitespace-nowrap">
+                  <XCircle className="h-4 w-4 mr-1 flex-shrink-0" /> Rebutjada
                 </span>
               )}
-            </p>
+            </div>
           </div>
           
-          <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-3">
+          <div className="flex-shrink-0">
             <Button 
               variant="outline" 
               onClick={() => router.push('/dashboard/inscripciones')}
               iconLeft={<ArrowLeft className="h-4 w-4" />}
               size="md"
+              className="w-full sm:w-auto"
             >
               Tornar
             </Button>
@@ -261,9 +366,9 @@ export default function DetalleInscripcionPage() {
       </div>
       
       {/* Panel de acciones */}
-      <div className="bg-gray-50 p-6 border border-gray-200 rounded-lg shadow-sm mb-6">
-        <h2 className="text-lg font-bold mb-4 text-gray-800">Accions disponibles</h2>
-        <div className="flex flex-wrap gap-3">
+      <div className="bg-gray-50 p-4 md:p-6 border border-gray-200 rounded-lg shadow-sm mb-4 md:mb-6">
+        <h2 className="text-base md:text-lg font-bold mb-4 text-gray-800">Accions disponibles</h2>
+        <div className="flex flex-wrap gap-2 md:gap-3">
           {inscripcion.estado !== 'completada' && !inscripcion.processed && (
             <Button
               variant="success"
@@ -322,15 +427,15 @@ export default function DetalleInscripcionPage() {
       </div>
       
       {/* Información personal y de contacto */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
         {/* Datos del jugador */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <User className="h-5 w-5 mr-2 text-gray-500" />
+        <Card className="p-4 md:p-6">
+          <h2 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 flex items-center">
+            <User className="h-5 w-5 mr-2 text-gray-500 flex-shrink-0" />
             Dades del jugador
           </h2>
           
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 md:gap-4">
             <div>
               <p className="text-sm font-medium text-gray-500 mb-1">Nom complet</p>
               <p className="text-gray-800">{inscripcion.player_name}</p>
@@ -368,7 +473,7 @@ export default function DetalleInscripcionPage() {
 
         {/* Información de contacto */}
         <Card title="Dades de contacte" className="col-span-1">
-          <div className="p-4 space-y-4">
+          <div className="p-3 md:p-4 space-y-3 md:space-y-4 overflow-hidden">
             <div className="flex items-start">
               <User className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
               <div>
@@ -409,7 +514,7 @@ export default function DetalleInscripcionPage() {
               <Mail className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-900">Email principal</p>
-                <p className="mt-1 text-base">{inscripcion.email1}</p>
+                <div className="mt-1 text-base break-all">{inscripcion.email1}</div>
               </div>
             </div>
 
@@ -418,7 +523,7 @@ export default function DetalleInscripcionPage() {
                 <Mail className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Email secundari</p>
-                  <p className="mt-1 text-base">{inscripcion.email2}</p>
+                  <div className="mt-1 text-base break-all">{inscripcion.email2}</div>
                 </div>
               </div>
             )}
@@ -437,13 +542,13 @@ export default function DetalleInscripcionPage() {
 
         {/* Dirección e información adicional */}
         <Card title="Adreça i informació addicional" className="col-span-1">
-          <div className="p-4 space-y-4">
+          <div className="p-3 md:p-4 space-y-3 md:space-y-4 overflow-hidden">
             <div className="flex items-start">
               <MapPin className="h-5 w-5 text-gray-500 mt-0.5 mr-3" />
               <div>
                 <p className="text-sm font-medium text-gray-900">Adreça</p>
-                <p className="mt-1 text-base">{inscripcion.address}</p>
-                <p className="text-base">{inscripcion.city}, {inscripcion.postal_code}</p>
+                <p className="mt-1 text-base break-words">{inscripcion.address}</p>
+                <p className="text-base break-words">{inscripcion.city}, {inscripcion.postal_code}</p>
               </div>
             </div>
             

@@ -5,8 +5,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion, useInView } from "framer-motion"
 import { Calendar, ChevronRight, Clock, ArrowRight } from "lucide-react"
-import { obtenerNoticias, Noticia } from "@/services/dashboardService"
+import { getLatestNews } from "@/services/supabaseService"
+import { Noticia } from "@/services/dashboardService"
 import { generarSlug } from "@/utils/slugUtils"
+
 
 // Tipos para las noticias (local del componente)
 export interface NewsCategory {
@@ -146,7 +148,7 @@ export default function LatestNewsSection({
         }
         
         // Obtener noticias reales de Supabase
-        const noticiasData = await obtenerNoticias(limit, 0);
+        const noticiasData = await getLatestNews(limit);
         
         // Mapear a formato del componente
         const newsItems = noticiasData.map(mapNoticiaToNewsItem);
@@ -357,4 +359,3 @@ export default function LatestNewsSection({
     </section>
   )
 }
-

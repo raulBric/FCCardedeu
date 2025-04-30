@@ -118,12 +118,16 @@ export default function DashboardPage() {
           console.error("Error al cargar patrocinadores:", patroError);
         }
         
-        // 4. Cargar inscripciones
+        // 4. Cargar inscripciones - Obtener TODAS las inscripciones para mostrar conteo exacto
         let inscripciones: Inscripcion[] = [];
         let inscripcionesPendientes: number = 0;
         try {
-          inscripciones = await obtenerInscripciones(50, 0);
+          // Aumentamos el límite para mostrar todas las inscripciones existentes
+          // (Si hay miles, considerar implementar paginación en el backend)
+          inscripciones = await obtenerInscripciones(1000, 0);
+          console.log(`Se han cargado ${inscripciones.length} inscripciones en total`);
           inscripcionesPendientes = inscripciones.filter(i => i.estado === 'pendiente').length;
+          console.log(`De las cuales ${inscripcionesPendientes} están pendientes`);
         } catch (inscError) {
           console.error("Error al cargar inscripciones:", inscError);
         }

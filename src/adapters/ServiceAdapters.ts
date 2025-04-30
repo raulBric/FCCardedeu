@@ -661,17 +661,29 @@ export type InscripcionDashboard = {
 
 // Adaptador para obtener inscripciones pendientes
 export const obtenerInscripciones = async (limit = 50, page = 0): Promise<InscripcionDashboard[]> => {
-  const inscripcionService = ServiceFactory.getInscripcionService();
-  // El método no acepta parámetros en la versión actual del servicio
-  const inscripciones = await inscripcionService.getInscripciones();
+  try {
+    console.log(`[ServiceAdapters] Obteniendo inscripciones, limit=${limit}, page=${page}`);
+    
+    // Usar directamente Supabase en lugar del servicio para evitar problemas
+    const { data: inscripciones, error } = await supabase
+      .from('inscripcions')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Error al obtener inscripciones:', error);
+      throw error;
+    }
+    
+    console.log(`[ServiceAdapters] Se encontraron ${inscripciones?.length || 0} inscripciones en total`);
+    
+    // Implementamos la paginación manualmente para mantener compatibilidad
+    const paginatedInscripciones = limit > 0 && inscripciones ? 
+      inscripciones.slice(page * limit, (page + 1) * limit) : 
+      inscripciones || [];
   
-  // Implementamos la paginación manualmente para mantener compatibilidad
-  const paginatedInscripciones = limit > 0 ? 
-    inscripciones.slice(page * limit, (page + 1) * limit) : 
-    inscripciones;
-  
-  // Adaptar el formato del core al formato esperado por los componentes
-  return paginatedInscripciones.map(i => ({
+    // Adaptar el formato del core al formato esperado por los componentes
+    return paginatedInscripciones.map(i => ({
     id: i.id || 0,
     player_name: i.player_name,
     birth_date: i.birth_date,
@@ -706,6 +718,10 @@ export const obtenerInscripciones = async (limit = 50, page = 0): Promise<Inscri
       is_verified: true
     } : undefined
   }));
+  } catch (error) {
+    console.error("Error en obtenerInscripciones:", error);
+    return [];
+  }
 };
 
 // Función auxiliar para mapear estados de pago

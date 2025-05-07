@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Newspaper, 
@@ -14,9 +14,11 @@ import {
   UserRound,
   UserCog,
   ClipboardPenLine,
-  ShieldIcon
+  ShieldIcon,
+  History
 } from "lucide-react";
 import Escudo from "@/assets/Escudo.png";
+import { supabase } from "@/lib/supabaseClient";
 
 const navItems = [
   { 
@@ -65,6 +67,11 @@ const navItems = [
     href: "/dashboard/calendari" 
   },
   { 
+    label: "Registre Sessions", 
+    icon: History, 
+    href: "/dashboard/logs" 
+  },
+  { 
     label: "Configuració", 
     icon: Settings, 
     href: "/dashboard/configuracio" 
@@ -78,10 +85,31 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const handleLogout = async () => {
-    // Implementar lógica de cierre de sesión aquí
-    alert("Tancant sessió...");
+    try {
+      // Mostrar mensaje mientras se cierra la sesión
+      console.log("Cerrando sesión...");
+      
+      // Cerrar sesión en Supabase
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Error al cerrar sesión:", error);
+        alert(`Error al cerrar sesión: ${error.message}`);
+        return;
+      }
+      
+      // Limpiar cualquier estado local o cache si es necesario
+      
+      // Redireccionar a la página de login
+      router.push("/my-club");
+      router.refresh(); // Forzar refresh para asegurar que todo se actualiza
+    } catch (err) {
+      console.error("Error inesperado al cerrar sesión:", err);
+      alert("Ha ocurrido un error al cerrar sesión. Inténtalo de nuevo.");
+    }
   };
 
   return (

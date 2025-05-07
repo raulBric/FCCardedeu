@@ -30,6 +30,27 @@
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  
+  /* Personalización del scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: white;
+    border-radius: 5px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #dc2626; /* Red-600 de Tailwind */
+    border-radius: 5px;
+    border: 2px solid white;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #b91c1c; /* Red-700 de Tailwind */
+  }
 }
 
 @layer base {

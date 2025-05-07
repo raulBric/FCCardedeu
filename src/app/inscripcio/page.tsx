@@ -2,13 +2,244 @@
 
 import type React from "react"
 
-import { useState, type ChangeEvent, type FormEvent, useRef } from "react"
+import { useState, type ChangeEvent, type FormEvent, useRef, useEffect } from "react"
 import Header from "@/components/Header"
 import { motion } from "framer-motion"
 import { ChevronRight, ChevronLeft, Check, CreditCard, AlertCircle, X } from "lucide-react"
 import Link from "next/link"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { configurarTablaInscripcions } from "@/services/configurarTablaInscripcions"
+import { loadStripe } from "@stripe/stripe-js"
+import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js"
+
+// Inicializar Stripe con la clave pública
+const stripePublicKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY;
+const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
+
+// Props para el componente de pago con Stripe
+interface StripePaymentFormProps {
+  email: string;
+  playerDNI: string;
+  setSubmitError: (error: string | null) => void;
+  setIsPaying: (isPaying: boolean) => void;
+  isPaying: boolean;
+}
+
+// Componente para el formulario de pago con Stripe Elements
+const StripePaymentForm = ({ email, playerDNI, setSubmitError, setIsPaying, isPaying }: StripePaymentFormProps) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [paymentComplete, setPaymentComplete] = useState(false);
+  const [clientSecret, setClientSecret] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Al cargar el componente, obtener el client secret para el pago
+  useEffect(() => {
+    const getClientSecret = async () => {
+      try {
+        setIsLoading(true);
+        console.log('Iniciando solicitud de PaymentIntent para:', email, playerDNI);
+        
+        // FALLBACK PARA DESARROLLO
+        // Si estamos en desarrollo y no hay Stripe configurado, usar un flujo alternativo
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Modo desarrollo: Comprobando si usar flujo alternativo sin Stripe');
+          // Intentar primero la API para ver si funciona
+          try {
+            // Hacer una petición simple para comprobar si el API está disponible
+            const testResponse = await fetch('/api/create-payment-intent', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ test: true })
+            });
+            
+            // Si hay error 500, probablemente no hay Stripe configurado
+            if (testResponse.status === 500) {
+              console.log('Detectado entorno sin Stripe - usando flujo alternativo');
+              // Usar un client secret falso para desarrollo
+              setTimeout(() => {
+                // Simular carga para mejor experiencia de usuario
+                setClientSecret('dev_secret_not_real');
+                localStorage.setItem('paymentIntentId', 'dev_pi_not_real_' + Date.now());
+                setPaymentComplete(true); // Activar el botón de pago
+                setIsLoading(false);
+              }, 1000);
+              return;
+            }
+          } catch (e) {
+            // Si hay error al hacer la petición, probablemente no hay servidor
+            console.log('Error al probar API - usando flujo alternativo', e);
+            setClientSecret('dev_secret_not_real');
+            localStorage.setItem('paymentIntentId', 'dev_pi_not_real_' + Date.now());
+            setPaymentComplete(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // FLUJO NORMAL - Llamada al endpoint API para obtener el clientSecret
+        const response = await fetch('/api/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email, 
+            playerDNI,
+          })
+        });
+        
+        // Verificar si la respuesta es correcta antes de procesar el JSON
+        if (!response.ok) {
+          console.error('Error en la respuesta del servidor:', response.status, response.statusText);
+          
+          // Intentar leer el cuerpo de respuesta como texto para diagnosticar
+          const textBody = await response.text();
+          console.error('Cuerpo de la respuesta:', textBody);
+          
+          // Verificar si es JSON válido o un mensaje de error HTML
+          if (textBody.trim().startsWith('{')) {
+            // Es JSON, intentar parsearlo
+            try {
+              const errorData = JSON.parse(textBody);
+              throw new Error(errorData.error || `Error del servidor: ${response.status}`);
+            } catch (parseError) {
+              throw new Error(`Error de servidor (${response.status}): No se pudo procesar la respuesta`);
+            }
+          } else {
+            // No es JSON, probablemente HTML o texto de error
+            throw new Error(`Error del servidor (${response.status}): Contacta con el club`);
+          }
+        }
+        
+        // Procesar la respuesta JSON
+        const data = await response.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        if (data.clientSecret) {
+          console.log('ClientSecret obtenido correctamente');
+          setClientSecret(data.clientSecret);
+          // Guardamos también el ID del paymentIntent para recuperarlo en la página de éxito
+          localStorage.setItem('paymentIntentId', data.paymentIntentId);
+          setIsLoading(false);
+        } else {
+          throw new Error('No se ha podido obtener el token de pago');
+        }
+      } catch (error: any) {
+        console.error('Error al obtener el clientSecret:', error);
+        setSubmitError(`Error al preparar el pago: ${error.message || 'Error desconocido'}. Contacta con el club.`);
+        setIsLoading(false);
+      }
+    };
+    
+    // Solo llamar si tenemos email y DNI
+    if (email && playerDNI) {
+      getClientSecret();
+    } else {
+      console.warn('Falta email o DNI para crear el PaymentIntent');
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    }
+  }, [email, playerDNI, setSubmitError]);
+  
+  const handleProcessPayment = async () => {
+    if (!stripe || !elements) {
+      // Stripe.js aún no ha cargado
+      return;
+    }
+    
+    setIsPaying(true);
+    
+    try {
+      // Verificar que tengamos datos del formulario guardados
+      const formData = localStorage.getItem('inscripcionFormData');
+      if (!formData) {
+        throw new Error("No se encontraron los datos del formulario");
+      }
+      
+      // Confirmar el pago con Stripe
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/inscripcio/success`,
+          payment_method_data: {
+            billing_details: { 
+              email,
+              name: playerDNI // Usamos el DNI como identificador
+            }
+          }
+        },
+        redirect: 'if_required'
+      });
+      
+      // Si hay un error en el pago
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      // Si llegamos aquí y no hubo redirección, redirigimos manualmente
+      window.location.href = `${window.location.origin}/inscripcio/success`;
+      
+    } catch (error: any) {
+      console.error("Error al procesar el pago:", error);
+      setSubmitError(`Error al procesar el pago: ${error.message || 'Error desconegut'}. Si us plau, contacta amb el club.`);
+      setIsPaying(false);
+    }
+  };
+  
+  return (
+    <div className="mb-6 max-w-md mx-auto">
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2 text-left">
+          Mètodes de pagament
+        </label>
+        <div className="border border-gray-300 rounded-md p-4 bg-white">
+          {clientSecret ? (
+            <PaymentElement 
+              options={{
+                layout: {
+                  type: 'tabs',
+                  defaultCollapsed: false,
+                },
+                paymentMethodOrder: ['card', 'paypal', 'klarna', 'bizum'],
+              }}
+              onChange={(e) => setPaymentComplete(e.complete)}
+            />
+          ) : (
+            <div className="py-4 text-center text-gray-500">
+              Carregant opcions de pagament...
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <button
+        type="button"
+        onClick={handleProcessPayment}
+        disabled={!stripe || !clientSecret || !paymentComplete || isPaying || isLoading}
+        className="w-full px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition flex items-center justify-center disabled:bg-green-300 disabled:cursor-not-allowed"
+      >
+        {isPaying ? (
+          <>
+            <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
+            Processant pagament...
+          </>
+        ) : (
+          <>
+            <CreditCard className="mr-2 w-5 h-5" />
+            Pagar 150€
+          </>
+        )}
+      </button>
+      
+      {isLoading && !clientSecret && (
+        <p className="text-sm text-gray-500 mt-2 text-center">Carregant el formulari de pagament...</p>
+      )}
+    </div>
+  );
+};
 
 interface FormData {
   playerName: string
@@ -83,6 +314,7 @@ export default function Page() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [showModal, setShowModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPaying, setIsPaying] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -307,12 +539,15 @@ export default function Page() {
     e.preventDefault()
 
     // Validar todos los pasos antes de enviar
-    for (let i = 1; i <= 4; i++) {
+    for (let i = 1; i <= 3; i++) {
       if (!validateStep(i)) {
         setCurrentStep(i)
         return
       }
     }
+    
+    // Guardamos los datos del formulario en localStorage para el proceso de pago
+    localStorage.setItem('inscripcionFormData', JSON.stringify(formData))
 
     setIsSubmitting(true)
     setSubmitError(null)
@@ -363,6 +598,7 @@ export default function Page() {
 
       console.log('Inserción vía RPC correcta:', data)
       setCurrentStep(4)
+      window.scrollTo(0, 0)
     } catch (error: unknown) {
       console.error("Error:", error)
       // Mostrar detalles del error para facilitar la depuración
@@ -921,8 +1157,8 @@ export default function Page() {
               </motion.div>
             )}
 
-            {/* Paso 4: Confirmación */}
-            {currentStep === 4 && (
+            {/* Paso 4: Confirmación (sin formulario de pago visible) */}
+            {currentStep === 4 && !isPaying && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -941,18 +1177,19 @@ export default function Page() {
                   <h3 className="font-medium text-blue-800 mb-2">Pròxims passos</h3>
                   <ol className="list-decimal pl-5 text-sm text-blue-700 space-y-1">
                     <li>Rebràs un correu electrònic de confirmació</li>
-                    <li>Realitza el pagament mitjançant l&apos;enllaç a continuació</li>
+                    <li>Realitza el pagament directament en aquesta pàgina</li>
                     <li>Un cop confirmat el pagament, la inscripció estarà completa</li>
                   </ol>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    href="/pagament/demo"
+                  <button
+                    type="button"
+                    onClick={() => setIsPaying(true)}
                     className="px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition flex items-center justify-center"
                   >
                     <CreditCard className="mr-2 w-5 h-5" /> Realitzar pagament ara
-                  </Link>
+                  </button>
 
                   <button
                     type="button"
@@ -960,6 +1197,84 @@ export default function Page() {
                     className="px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition"
                   >
                     Tornar a l&apos;inici
+                  </button>
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Paso 4: Formulario de pago con Stripe */}
+            {currentStep === 4 && isPaying && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-white p-6 rounded-lg shadow-md"
+              >
+                <div className="flex justify-between items-center mb-6 pb-2 border-b">
+                  <h2 className="text-xl font-semibold text-gray-800">Pagament de la inscripció</h2>
+                  <button 
+                    onClick={() => setIsPaying(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                {submitError && (
+                  <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
+                    <div className="flex items-center">
+                      <AlertCircle className="w-5 h-5 mr-2" />
+                      <span>{submitError}</span>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mb-4">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Inscripció FC Cardedeu</span>
+                    <span className="font-medium">150€</span>
+                  </div>
+                  <div className="border-t pt-2 mt-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Total</span>
+                      <span className="font-bold">150€</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Mostrar el formulario de pago de Stripe Elements */}
+                {stripePromise && (
+                  <Elements 
+                    stripe={stripePromise} 
+                    options={{
+                      locale: 'es',
+                      appearance: {
+                        theme: 'flat',
+                        variables: {
+                          colorPrimary: '#e11d48', // color rojo del club
+                          colorBackground: '#ffffff',
+                          colorText: '#30313d',
+                        },
+                      },
+                    }}
+                  >
+                    <StripePaymentForm 
+                      email={formData.email1 || ''} 
+                      playerDNI={formData.playerDNI || ''} 
+                      setSubmitError={setSubmitError} 
+                      setIsPaying={setIsPaying}
+                      isPaying={isPaying}
+                    />
+                  </Elements>
+                )}
+                
+                <div className="mt-4 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsPaying(false)}
+                    className="px-4 py-2 text-gray-600 font-medium hover:underline transition flex items-center"
+                  >
+                    <ChevronLeft className="mr-1 w-4 h-4" /> Tornar al resum
                   </button>
                 </div>
               </motion.div>

@@ -18,9 +18,12 @@ import {
 import { Button } from "@/components/ui/button";
 import Escudo from "@/assets/Escudo.png";
 import { SearchDialog } from "@/components/SearchDialog";
-// import { Input } from "@/components/ui/input"
 
-// Menu structure with categories
+// ---------------- Constants -----------------
+const SCROLL_THRESHOLD = 10;
+const scrollOptions = { passive: true } as const;
+
+// ---------------- Types ---------------------
 const menuStructure: MenuStructureItem[] = [
   { name: "Inici", path: "/", type: "link" as const },
   {
@@ -78,24 +81,23 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Debounced scroll handler for better performance
+  // Controlador de scroll optimizado
   const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 10);
+    setScrolled(window.scrollY > SCROLL_THRESHOLD);
   }, []);
 
+  // Efecto para el scroll
   useEffect(() => {
-    // Handle body scroll lock when menu is open
-    document.body.style.overflow = isMenuOpen ? "hidden" : "auto";
-
-    // Add scroll event listener with passive option for better performance
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, scrollOptions);
+    handleScroll(); // Establecer estado inicial
     
-    // Resetear el estado de navegación cuando cambiamos de página
-    const handleRouteChange = () => {
-      setIsNavigating(false);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
     };
-    
-    // Este código se ejecuta cuando la navegación se completa
+  }, [handleScroll]);
+
+  // Efecto para prefetch de rutas (solo una vez)
+  useEffect(() => {
     router.prefetch('/');
     menuStructure.forEach(item => {
       if (item.type === 'link') {
@@ -106,12 +108,15 @@ export default function Header() {
         });
       }
     });
+  }, [router]);
 
+  // Efecto para bloquear scroll cuando el menú está abierto
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? "hidden" : "auto";
     return () => {
       document.body.style.overflow = "auto";
-      window.removeEventListener("scroll", handleScroll);
     };
-  }, [isMenuOpen, handleScroll, router]);
+  }, [isMenuOpen]);
 
   // Handle keyboard navigation with proper type
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
@@ -175,8 +180,11 @@ export default function Header() {
                     <DropdownMenuItem key={subItem.name} asChild>
                       <Link
                         href={subItem.path}
-                        prefetch={true}
-                        className="text-white hover:bg-white/10 cursor-pointer"
+                        onClick={() => {
+                          if (isNavigating) return;
+                          setIsNavigating(true);
+                        }}
+                        className="px-2 py-1.5 text-sm text-white hover:text-white/90 hover:bg-red-800 rounded transition-colors focus:bg-red-800 focus:outline-none cursor-pointer"
                       >
                         {subItem.name}
                       </Link>
@@ -279,22 +287,17 @@ export default function Header() {
                 {menuStructure.map((item) => (
                   <li key={item.name}>
                     {item.type === "link" ? (
-                      <a
-                        href="#"
-                        className="text-white text-2xl font-bold block py-2"
-                        onClick={(e) => {
-                          e.preventDefault();
+                      <Link
+                        href={item.path}
+                        onClick={() => {
                           if (isNavigating) return;
                           setIsNavigating(true);
                           setIsMenuOpen(false);
-                          // Pequeño delay para permitir la animación de cierre
-                          setTimeout(() => {
-                            router.push(item.path);
-                          }, 10);
                         }}
+                        className="text-white text-2xl font-bold block py-2"
                       >
                         {item.name}
-                      </a>
+                      </Link>
                     ) : (
                       <div className="space-y-4">
                         <h3 className="text-white/70 text-lg font-medium">
@@ -303,22 +306,17 @@ export default function Header() {
                         <ul className="pl-4 space-y-3 border-l border-white/20">
                           {item.items?.map((subItem) => (
                             <li key={subItem.name}>
-                              <a
-                                href="#"
+                              <Link
+                                href={subItem.path}
                                 className="text-white text-xl font-medium block py-1"
-                                onClick={(e) => {
-                                  e.preventDefault();
+                                onClick={() => {
                                   if (isNavigating) return;
                                   setIsNavigating(true);
                                   setIsMenuOpen(false);
-                                  // Pequeño delay para permitir la animación de cierre
-                                  setTimeout(() => {
-                                    router.push(subItem.path);
-                                  }, 10);
                                 }}
                               >
                                 {subItem.name}
-                              </a>
+                              </Link>
                             </li>
                           ))}
                         </ul>

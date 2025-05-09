@@ -1,6 +1,7 @@
 'use server'
 
-import { headers } from 'next/headers'
+// import { headers } from 'next/headers'
+// Importar directamente usando ruta relativa explícita
 import { stripe } from '../lib/stripe'
 
 /**

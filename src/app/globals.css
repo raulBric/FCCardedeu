@@ -51,6 +51,26 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #b91c1c; /* Red-700 de Tailwind */
   }
+  
+  /* Animaciones para el componente de Loading */
+  @keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+  }
+  
+  .animate-progress {
+    animation: progress 2s ease-in-out infinite;
+  }
+  
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 }
 
 @layer base {

@@ -664,20 +664,14 @@ export const obtenerInscripciones = async (limit = 50, page = 0): Promise<Inscri
   try {
     console.log(`[ServiceAdapters] Obteniendo inscripciones, limit=${limit}, page=${page}`);
     
-    // Usar directamente Supabase en lugar del servicio para evitar problemas
-    const { data: inscripciones, error } = await supabase
-      .from('inscripcions')
-      .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (error) {
-      console.error('Error al obtener inscripciones:', error);
-      throw error;
-    }
+    // Obtenemos el servicio de inscripciones a través de la factoría
+    const inscripcionService = ServiceFactory.getInscripcionService();
+    // getInscripciones no acepta parámetros, obtenemos todos y luego filtramos
+    const inscripciones = await inscripcionService.getInscripciones();
     
     console.log(`[ServiceAdapters] Se encontraron ${inscripciones?.length || 0} inscripciones en total`);
     
-    // Implementamos la paginación manualmente para mantener compatibilidad
+    // Implementamos la paginación manualmente después de obtener los datos
     const paginatedInscripciones = limit > 0 && inscripciones ? 
       inscripciones.slice(page * limit, (page + 1) * limit) : 
       inscripciones || [];

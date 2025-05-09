@@ -16,12 +16,23 @@ const nextConfig = {
 
   // Configure image domains for the FC Cardedeu project
   images: {
-    domains: ['supabase.fcardedeu.cat', 'i.imgur.com', 'imgur.com'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'supabase.fcardedeu.cat',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'imgur.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'mgbqfocaamecvtmxwoia.supabase.co',
+      }
     ],
   },
 };

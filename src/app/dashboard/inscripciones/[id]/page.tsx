@@ -31,7 +31,7 @@ import {
 } from "@/adapters/ServiceAdapters";
 
 // Definición del tipo Inscripcion para usar en este componente
-interface Inscripcion {
+export interface Inscripcion {
   id?: number;
   player_name: string;
   birth_date: string;

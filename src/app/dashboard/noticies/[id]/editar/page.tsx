@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft, Calendar, Upload, X, Loader2, Check, AlertTriangle, Eye, Edit } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import rehypeRaw from "rehype-raw";
 import Image from "next/image";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -306,6 +307,9 @@ export default function EditarNoticiaPage() {
       case 'strike':
         insertText('~~', '~~');
         break;
+      case 'paragraph':
+        insertText('\n\n');
+        break;
       case 'ol':
         if (selectedText.length > 0) {
           // Convertir cada línea en un elemento de lista ordenada
@@ -567,6 +571,18 @@ export default function EditarNoticiaPage() {
                           </button>
                         </div>
                         
+                        {/* Salto de párrafo */}
+                        <div className="border-r border-gray-300 pr-2 mr-2 flex space-x-1">
+                          <button 
+                            type="button" 
+                            onClick={() => handleToolbarAction('paragraph')}
+                            className="p-1 hover:bg-gray-200 rounded" 
+                            title="Salt de paràgraf"
+                          >
+                            <span className="font-mono">¶</span>
+                          </button>
+                        </div>
+                        
                         {/* Listas */}
                         <div className="border-r border-gray-300 pr-2 mr-2 flex space-x-1">
                           <button 
@@ -711,11 +727,17 @@ export default function EditarNoticiaPage() {
                         )}
                         
                         {/* Contenido */}
-                        <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-a:text-red-600 prose-a:no-underline hover:prose-a:underline">
+                        <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:my-6 prose-a:text-red-600 prose-a:no-underline hover:prose-a:underline">
                           {formData.contenido ? (
                             <ReactMarkdown 
-                              remarkPlugins={[remarkGfm]}
+                              remarkPlugins={[remarkGfm, remarkBreaks]}
                               rehypePlugins={[rehypeRaw]}
+                              components={{
+                                p: ({node, ...props}) => <p style={{marginTop: '1.5em', marginBottom: '1.5em', whiteSpace: 'pre-line'}} {...props} />,
+                                h1: ({ node, ...props }) => (
+                                  <h1 className="text-3xl font-bold my-4" {...props} />
+                                ),
+                              }}
                             >
                               {formData.contenido}
                             </ReactMarkdown>

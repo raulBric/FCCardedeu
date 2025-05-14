@@ -19,7 +19,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'supabase.fcardedeu.cat',
+        hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname,
       },
       {
         protocol: 'https',
@@ -29,10 +29,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'imgur.com',
       },
-      {
-        protocol: 'https',
-        hostname: 'mgbqfocaamecvtmxwoia.supabase.co',
-      }
     ],
   },
 };

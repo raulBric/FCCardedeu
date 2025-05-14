@@ -1,62 +1,32 @@
-// src/lib/supabaseClient.ts
-import { createBrowserClient } from '@supabase/ssr';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
-import { Database } from './database.types';
+// src/lib/supabaseClient.ts - COMPATIBILITY FACADE
+// -----------------------------------------------------------------------------
+// Este archivo se mantiene para evitar refactors masivos en toda la base de
+// código. Internamente delega en la nueva implementación oficial situada en
+// `src/utils/supabase`. De esta forma evitamos duplicar instancias de
+// GoTrueClient y mantenemos un único punto de verdad.
+// -----------------------------------------------------------------------------
 
-// Nota: No importamos 'cookies' de 'next/headers' para evitar errores en client components
+import { createClient as createSupabaseBrowserClient } from '@/utils/supabase/client';
 
-// Marcador para indicar que este archivo es un módulo ES
-export {}; // Esto fuerza a TypeScript a tratar el archivo como un módulo ES
+// Instancia singleton reaprovechada por los módulos legacy
+let _supabase: ReturnType<typeof createSupabaseBrowserClient> | null = null;
 
-/**
- * Cliente para componentes del cliente (páginas/componentes con "use client")
- * Uso: import { createBrowserSupabaseClient } from '@/lib/supabaseClient';
- *      const supabase = createBrowserSupabaseClient();
- */
-export const createBrowserSupabaseClient = () => {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      // Configuración correcta para evitar errores de cookies asíncronas
-      cookieOptions: {
-        // Aseguramos que las cookies sean accesibles para JS en el cliente
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-      }
-    }
-  );
-};
-
-/**
- * Cliente pre-configurado para uso directo en componentes del cliente
- * Uso: import { supabase } from '@/lib/supabaseClient';
- */
-export const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    // Configuración correcta para evitar errores de cookies asíncronas
-    cookieOptions: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-    }
+export const supabase = (() => {
+  if (!_supabase) {
+    _supabase = createSupabaseBrowserClient();
   }
-);
+  return _supabase;
+})();
 
-// NOTA: El cliente para Server Components se ha movido a un archivo separado
-// para evitar errores de importación en componentes del cliente.
-// Ver: src/lib/supabaseServerClient.ts
-
-/**
- * Cliente tradicional para uso en entornos sin soporte para cookies (APIs, funciones)
- * Uso: import { createStandaloneClient } from '@/lib/supabaseClient';
- *      const supabase = createStandaloneClient();
- */
-export const createStandaloneClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  return createSupabaseClient(supabaseUrl, supabaseKey);
+// EXPOSICIONES DE COMPATIBILIDAD ------------------------------------------------
+// Algunos módulos antiguos esperaban las funciones/constantes siguientes. Las
+// re-exportamos apuntando a la nueva factoría.
+export const createBrowserSupabaseClient = createSupabaseBrowserClient;
+export const createStandaloneClient = createSupabaseBrowserClient;
+export const cookieOptions = {
+  path: '/',
+  sameSite: 'lax' as const,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  maxAge: 60 * 60 * 24 * 7, // 7 días
 };

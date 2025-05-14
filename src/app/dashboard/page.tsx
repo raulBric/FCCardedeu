@@ -77,7 +77,16 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
+    // Usar una referencia para evitar doble carga debido a React.StrictMode
+    const isMounted = { current: true };
+    // Flag para prevenir refetching inadvertido
+    const dataLoaded = { current: false };
+    
     async function fetchData() {
+      // Si ya se han cargado datos o el componente se ha desmontado, no hacer nada
+      if (!isMounted.current || dataLoaded.current) return;
+      // Marcar que se están cargando datos
+      dataLoaded.current = true;
       try {
         // Cargar datos en orden y manejar errores individualmente
         // 1. Cargar noticias
@@ -93,7 +102,7 @@ export default function DashboardPage() {
           });
           
           noticiasRecientes = noticiasTotal.slice(0, 10); // Usar solo las 10 más recientes para mostrar
-          console.log("Noticias cargadas correctamente:", noticiasTotal.length, "La más reciente es:", noticiasRecientes[0]?.titulo);
+            // Eliminado console.log para evitar mensajes duplicados en consola
         } catch (noticiasError) {
           console.error("Error específico al cargar noticias:", noticiasError);
           // Continuar con otras cargas de datos

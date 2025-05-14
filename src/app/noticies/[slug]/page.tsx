@@ -7,10 +7,11 @@ import Link from "next/link";
 import { Calendar, Clock, ArrowLeft, ChevronRight } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 import rehypeRaw from "rehype-raw";
 import { obtenerNoticias, Noticia } from "@/services/dashboardService";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+
 import ShareButtons from "@/components/ShareButtons";
 import { generarSlug, obtenerIdDesdeSlug } from "@/utils/slugUtils";
 
@@ -79,11 +80,10 @@ export default function NoticiaDetallePage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
+        <Header />
         <main className="flex-grow flex items-center justify-center py-16">
           <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
         </main>
-        
-        <Footer />
       </div>
     );
   }
@@ -91,6 +91,7 @@ export default function NoticiaDetallePage() {
   if (!noticia) {
     return (
       <div className="min-h-screen flex flex-col">
+        <Header />
         <main className="flex-grow py-16">
           <div className="container mx-auto px-4">
             <div className="text-center py-12">
@@ -106,8 +107,6 @@ export default function NoticiaDetallePage() {
             </div>
           </div>
         </main>
-        
-        <Footer />
       </div>
     );
   }
@@ -198,7 +197,7 @@ export default function NoticiaDetallePage() {
             <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 md:p-8 prose prose-lg prose-red max-w-none
               prose-headings:text-gray-900 prose-headings:font-bold prose-headings:mb-6
               prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-              prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6
+              prose-p:text-gray-700 prose-p:leading-relaxed prose-p:my-6
               prose-a:text-red-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline
               prose-strong:text-gray-900 prose-strong:font-bold
               prose-ul:my-6 prose-ul:list-disc prose-ul:pl-6
@@ -216,10 +215,12 @@ export default function NoticiaDetallePage() {
               {/* Decoración visual del contenido */}
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-700"></div>
               
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm, remarkBreaks]}
                 rehypePlugins={[rehypeRaw]}
                 components={{
+                  // Configurar componentes para manejar saltos de párrafo correctamente
+                  p: ({node, ...props}) => <p style={{marginTop: '1.5em', marginBottom: '1.5em', whiteSpace: 'pre-line'}} {...props} />,
                   // Personalizar componentes de ReactMarkdown
                   h1: ({...props}) => <h1 className="border-b border-gray-200 pb-3" {...props} />,
                   h2: ({...props}) => <h2 className="border-b border-gray-100 pb-2" {...props} />,
@@ -321,7 +322,7 @@ export default function NoticiaDetallePage() {
         </div>
       </main>
       
-      <Footer />
+      
     </div>
   );
 }

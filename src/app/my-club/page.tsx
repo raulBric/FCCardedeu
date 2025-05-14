@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+// import { DebugAuth } from "../debug-auth";
 import { useRouter } from "next/navigation"; // Para redirigir al dashboard
 import Link from "next/link";
 import { Lock, Mail, ArrowLeft, Eye, EyeOff } from "lucide-react";
@@ -12,6 +13,49 @@ import Loading from "../loading"; // Importar componente de loading
 // Importar acciones del servidor para verificar autenticación
 import { checkAuthStatus, cleanAuthCookies } from "../actions/auth-check"
 
+// Limpieza total de cookies/localStorage al entrar en la página de login
+if (typeof window !== 'undefined') {
+  // Función de limpieza extrema
+  const purgeAuthStorage = () => {
+    console.log('[AUTH RESET] Purga completa de datos de autenticación');
+    // 1. Limpiar localStorage
+    try {
+      // Borrar explícitamente claves conocidas
+      ['supabase.auth.token', 'sb-access-token', 'sb-refresh-token'].forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      // Limpiar cualquier item relacionado con Supabase
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('supabase') || key.includes('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {}
+    
+    // 2. Limpiar cookies
+    try {
+      document.cookie.split(';').forEach(cookie => {
+        const name = cookie.split('=')[0].trim();
+        if (name.includes('supabase') || name.includes('sb-') || name === '__session') {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+        }
+      });
+    } catch (e) {}
+  };
+  
+  // Ejecutar limpieza inmediatamente
+  purgeAuthStorage();
+  
+  // Forzar refresco único si venimos de parámetro específico
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('forceReset') && sessionStorage.getItem('authReset') !== 'done') {
+    sessionStorage.setItem('authReset', 'done');
+    window.location.href = '/my-club'; // Recargar sin el parámetro
+  }
+}
+
 export default function MyClubPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +63,7 @@ export default function MyClubPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showFullLoading, setShowFullLoading] = useState(false); // Estado para mostrar loading completo
+  const [loginAttempts, setLoginAttempts] = useState(0); // Contador de intentos de login
   const router = useRouter(); // Inicializa useRouter para redirigir
 
   // Función para limpiar todas las cookies de autenticación
@@ -79,6 +124,28 @@ export default function MyClubPage() {
       console.log(`Limpiando cookie: ${name}`);
     });
 
+    // Modificamos estrategia para evitar el cierre de sesión previo
+    // Esto puede interferir con el establecimiento correcto de la nueva sesión
+    try {
+      // Verificar si hay una sesión activa antes de intentar cerrarla
+      const { data: session } = await supabase.auth.getSession();
+      if (session && session.session) {
+        console.log('%c[AUTH] Sesión activa detectada', 'color: orange; font-weight:bold;');
+      } else {
+        console.log('%c[AUTH] No hay sesión activa previa', 'color: teal; font-weight:bold;');
+      }
+      
+      // Esperar 100ms para asegurar operaciones asíncronas completas
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (sessionErr) {
+      console.warn('%c[AUTH] Error al verificar sesión previa', 'color: gray;', sessionErr);
+    }
+
+    try {
+      localStorage.removeItem('supabase.auth.token');
+    } catch {/* ignore storage errors */}
+    
+
     // Configurar un timeout para el inicio de sesión (15 segundos)
     const loginTimeout = setTimeout(() => {
       if (loading) {
@@ -89,17 +156,26 @@ export default function MyClubPage() {
     }, 15000);
 
     try {
+      // Incrementar contador de intentos para mejor debugging
+      setLoginAttempts(prev => prev + 1);
+      
       // Log más visible para el inicio del proceso de autenticación
       console.log("%c[AUTH] Intentando autenticación con:", "color: blue; font-weight: bold;", { 
         email, 
         passwordLength: password.length,
+        attempts: loginAttempts + 1,
         timestamp: new Date().toISOString() 
       });
+
+      // Usar un timeout para asegurar que todas las operaciones asíncronas anteriores han terminado
+      await new Promise(resolve => setTimeout(resolve, 50));
       
-      // Llama a Supabase para autenticar al usuario
+      // Llama a Supabase para autenticar al usuario CON OPCIONES ESTRICTAS
+      // para evitar intentos de reintento automáticos y autenticación anónima
+      // Usamos opciones más agresivas: desactivar redirección pero mantener sesión
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       });
       
       // Limpiar los timeouts ya que obtuvimos respuesta
@@ -108,30 +184,39 @@ export default function MyClubPage() {
       setShowFullLoading(false);
 
       if (error) {
-        // Log más visible para errores de autenticación
-        console.error("%c[AUTH ERROR] Fallo en autenticación:", "color: red; font-weight: bold; font-size: 14px;", { 
-          message: error.message, 
-          code: error.code,
-          email,
-          timestamp: new Date().toISOString()
+        // Log más visible para errores de autenticación - Mejorar diagnóstico mostrando objeto completo
+        console.error("%c[AUTH ERROR] Fallo en autenticación:", "color: red; font-weight: bold; font-size: 14px;", error, { 
+          details: {
+            errorType: error.name,
+            statusCode: error.status || 'unknown',
+            email,
+            timestamp: new Date().toISOString()
+          }
         });
         
-        // Mensaje más descriptivo según el error
-        if (error.message.includes("Invalid login credentials")) {
+        // Mensaje descriptivo según el error o error por defecto si está vacío
+        if (!error.message || Object.keys(error).length === 0) {
+          console.warn("%c[AUTH] Error vacío detectado, posible problema con cookies o API", "color: orange; font-weight: bold");
+          setError("Error de autenticación. Puede deberse a problemas de red o sesión. Inténtalo de nuevo.");
+          
+          // Esto podría ser un problema de sesión - hacemos limpieza adicional
+          try {
+            // Limpiar todas las cookies y localStorage de Supabase
+            document.cookie.split(';').forEach(cookie => {
+              const name = cookie.split('=')[0].trim();
+              document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            });
+            localStorage.clear(); // Limpieza completa en caso extremo
+            console.log("%c[AUTH] Limpieza radical realizada", "color: purple; font-weight: bold");
+          } catch (cleanupErr) {
+            console.error("%c[AUTH] Error en limpieza final", "color: red", cleanupErr);
+          }
+        } else if (error.message.includes("Invalid login credentials")) {
           setError("Correo o contraseña incorrectos.");
         } else if (error.message.includes("Email not confirmed")) {
           setError("Email no confirmado. Por favor, verifica tu bandeja de entrada.");
         } else {
-          setError(`Error: ${error.message}`);
-        }
-        
-        // Registro del intento fallido
-        // await logLoginAttempt(email, false, `Error: ${error.message} (${error.code})`);
-        // console.log("%c[AUTH LOG] Registrando intento fallido en BD", "color: orange;", { email });
-        
-        // Manejo específico de errores comunes
-        if (error.message.includes("Invalid login")) {
-          setError("Correo o contraseña incorrectos.");
+          setError(`Error de autenticación: ${error.message || 'Desconocido'}`); 
         }
         
         setLoading(false);
@@ -146,8 +231,22 @@ export default function MyClubPage() {
       setLoading(false);
       setError(null);
       
-      // Redirigir directamente al dashboard sin mostrar alerta
-      router.push("/dashboard");
+      // Usar Server Action para verificar autenticación desde el servidor
+      console.log("%c[AUTH REDIRECT] Usando Server Action para verificar sesión", "color: green; font-weight: bold;");
+      
+      // En lugar de redirigir directamente, usamos la acción del servidor
+      // Esto garantiza que las cookies se establezcan correctamente en el servidor
+      await checkAuthStatus();
+      
+      // Si llegamos aquí, significa que checkAuthStatus() no redirigió, por lo que hubo un problema
+      // Intentamos la redirección directa como fallback
+      console.log("%c[AUTH REDIRECT] Server Action no redirigió, intentando redirección directa", "color: orange;");
+      window.location.href = '/dashboard';
+      
+      // Guardar credenciales exitosas por si acaso
+      try {
+        sessionStorage.setItem('fc-cardedeu-lastEmail', email);
+      } catch (e) {/* Ignorar errores de storage */}
     } catch (err) {
       // Limpiar los timeouts ya que obtuvimos un error
       clearTimeout(loginTimeout);
@@ -256,6 +355,12 @@ export default function MyClubPage() {
           >
             {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
+          
+          {/* Mensaje informativo sobre problemas de autenticación */}
+          <div className="text-xs text-gray-500 mt-4 text-center">
+            Si experimentas problemas para iniciar sesión, inténtalo en una ventana de navegación privada 
+            o borra las cookies de este sitio.  
+          </div>
         </form>
 
         {/* 🔗 Link "Olvidaste tu contraseña?" */}
@@ -266,32 +371,6 @@ export default function MyClubPage() {
           >
             ¿Olvidaste tu contraseña?
           </Link>
-        </div>
-        
-        {/* Herramientas de diagnóstico */}
-        <div className="text-center mt-8 border-t pt-4">
-          <p className="text-gray-500 text-xs mb-2">
-            ¿Problemas para iniciar sesión?
-          </p>
-          <div className="flex flex-col gap-3">
-            {/* Botón para limpiar cookies */}
-            <form action={cleanAuthCookies}>
-              <button
-                type="submit"
-                className="text-gray-600 text-xs underline hover:text-club-primary"
-              >
-                Reiniciar estado de autenticación
-              </button>
-            </form>
-            
-            {/* Link directo al dashboard */}
-            <Link 
-              href="/dashboard" 
-              className="mt-1 text-club-primary text-xs hover:underline"
-            >
-              Intentar acceso directo al dashboard
-            </Link>
-          </div>
         </div>
       </div>
     </div>

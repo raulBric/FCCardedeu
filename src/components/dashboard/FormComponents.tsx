@@ -162,38 +162,61 @@ export const Button = ({
   );
 }
 
-// Card Component
+// Card Components
 interface CardProps {
   children: ReactNode;
-  title?: string;
-  footer?: ReactNode;
   className?: string;
 }
 
-export function Card({ children, title, footer, className = "" }: CardProps) {
+export function Card({ children, className = "" }: CardProps) {
   return (
-    <div className={`bg-white rounded-lg shadow-sm overflow-hidden ${className}`}>
-      {title && (
-        <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
-        </div>
-      )}
-      <div className="px-4 py-5 sm:p-6">{children}</div>
-      {footer && (
-        <div className="px-4 py-4 sm:px-6 bg-gray-50 border-t border-gray-200">
-          {footer}
-        </div>
-      )}
+    <div className={`bg-white rounded-lg shadow-md overflow-hidden ${className}`}>
+      {children}
     </div>
   );
 }
 
+interface CardHeaderProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export function CardHeader({ children, className = "" }: CardHeaderProps) {
+  return (
+    <div className={`px-6 py-4 border-b border-gray-200 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+interface CardTitleProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export function CardTitle({ children, className = "" }: CardTitleProps) {
+  return (
+    <h3 className={`text-lg font-medium text-gray-900 ${className}`}>{children}</h3>
+  );
+}
+
+interface CardContentProps {
+  children: ReactNode;
+  className?: string;
+}
+
+export function CardContent({ children, className = "" }: CardContentProps) {
+  return (
+    <div className={`p-6 ${className}`}>{children}</div>
+  );
+}
+
 // DataTable Component
-interface DataTableProps<T extends Record<string, unknown> = Record<string, unknown>> {
+interface DataTableProps<T = any> {
   columns: {
     key: string;
     header: string;
-    render?: (value: unknown, item: T) => ReactNode;
+    render?: (value: any, item: T) => ReactNode;
   }[];
   data: T[];
   onRowClick?: (item: T) => void;
@@ -201,7 +224,7 @@ interface DataTableProps<T extends Record<string, unknown> = Record<string, unkn
   emptyMessage?: string;
 }
 
-export function DataTable<T extends Record<string, unknown>>({ 
+export function DataTable<T>({ 
   columns, 
   data, 
   onRowClick, 

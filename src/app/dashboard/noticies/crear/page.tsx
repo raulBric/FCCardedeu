@@ -10,8 +10,8 @@ import Image from "next/image";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button, FormField } from "@/components/dashboard/FormComponents";
 import Card from "@/components/dashboard/Card";
-import { crearNoticia } from "@/services/dashboardService";
-import { supabase } from '@/lib/supabaseClient';
+import { crearNoticia, subirImagenNoticia } from "@/services/dashboardService";
+import { generateUniqueFileName } from "@/lib/storageService";
 
 export default function CrearNoticiaPage() {
   const router = useRouter();
@@ -22,7 +22,8 @@ export default function CrearNoticiaPage() {
   const [formData, setFormData] = useState({
     titulo: "",
     contenido: "",
-    fecha: new Date().toISOString().split('T')[0],
+    // Obtenir la data local (evitar desfase de zona horària)
+    fecha: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
     autor: "",
     categoria: "",
     destacada: false,
@@ -80,26 +81,21 @@ export default function CrearNoticiaPage() {
     // Subir a Supabase utilizando el servicio
     try {
       setUploadStatus('uploading');
-      console.log('Iniciando subida de imagen...');
-      
-      // Generar nombre único para el archivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+      console.log('Iniciant pujada d\'imatge...');
       
       // Mostrar información de diagnóstico
-      console.log('Información de la imagen:');
-      console.log('- Tipo:', file.type);
-      console.log('- Tamaño:', (file.size / 1024).toFixed(2), 'KB');
-      console.log('- Nombre generado:', fileName);
+      console.log('Informació de la imatge:');
+      console.log('- Tipus:', file.type);
+      console.log('- Mida:', (file.size / 1024).toFixed(2), 'KB');
       
-      // Usar el servicio para subir el archivo
-      const publicUrl = await subirArchivo('noticies', fileName, file);
-      console.log('URL obtenida:', publicUrl);
+      // Usar el servicio específico para subir imágenes de noticias
+      const publicUrl = await subirImagenNoticia(file);
+      console.log('URL obtinguda:', publicUrl);
       
       // Actualizar el estado del formulario con la URL pública
       setFormData(prev => ({ ...prev, imagen_url: publicUrl }));
       setUploadStatus('success');
-      console.log('Imagen subida exitosamente');
+      console.log('Imatge pujada correctament');
       
       // Eliminar cualquier error previo
       if (errors.imagen) {
@@ -116,92 +112,7 @@ export default function CrearNoticiaPage() {
     }
   };
   
-  // Función auxiliar para subir un archivo a Supabase utilizando una aproximación simplificada
-  const subirArchivo = async (bucket: string, path: string, file: File): Promise<string> => {
-    try {
-      console.log(`Intentando subir archivo a ${bucket}/${path}`);
-      
-      // Paso 1: Comprobar si hay claves de Supabase configuradas
-      console.log('URL de Supabase:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-      console.log('Clave de Supabase configurada:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-      
-      // Paso 2: Intentar subir directamente sin verificar el bucket
-      // Si el bucket no existe se creará automáticamente con la RLS correcta
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, {
-          cacheControl: '3600',
-          upsert: true
-        });
-      
-      if (uploadError) {
-        console.error('Error específico al subir:', uploadError);
-        
-        // Comprobar si es un error de permisos
-        if (uploadError.message.includes('permission') || uploadError.message.includes('not found')) {
-          console.log('Intentando crear bucket explícitamente...');
-          // Intentar crear el bucket explícitamente
-          try {
-            const { error: createError } = await supabase.storage.createBucket(bucket, {
-              public: true,
-              fileSizeLimit: 5242880 // 5MB en bytes
-            });
-            
-            if (createError) {
-              console.error('Error al crear bucket:', createError);
-              throw createError;
-            }
-            
-            // Reintentar la subida
-            const { error: retryError } = await supabase.storage
-              .from(bucket)
-              .upload(path, file, {
-                cacheControl: '3600',
-                upsert: true
-              });
-              
-            if (retryError) throw retryError;
-          } catch (e) {
-            console.error('Error al crear bucket o reintentar:', e);
-            throw e;
-          }
-        } else {
-          throw uploadError;
-        }
-      }
-      
-      // Para diagnóstico
-      console.log('Archivo subido correctamente:', path);
-      
-      // Obtener la URL pública usando el método oficial de Supabase
-      // pero con una verificación de seguridad adicional
-      try {
-        const { data: urlData } = supabase.storage
-          .from(bucket)
-          .getPublicUrl(path);
-          
-        if (urlData && urlData.publicUrl) {
-          console.log('URL pública obtenida correctamente:', urlData.publicUrl);
-          return urlData.publicUrl;
-        }
-      } catch (urlError) {
-        console.error('Error al obtener URL pública:', urlError);
-        // Continuar con el método de respaldo
-      }
-      
-      // Método de respaldo: Generar URL directamente
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
-      
-      console.log('URL generada manualmente (respaldo):', publicUrl);
-      return publicUrl;
-    } catch (error: unknown) {
-      const typedError = error as { message?: string; error_description?: string };
-      const errorMsg = typedError?.message || typedError?.error_description || JSON.stringify(error) || 'Error desconocido';
-      console.error(`Error detallado al subir archivo a ${bucket}/${path}:`, errorMsg);
-      throw new Error(`Error al pujar la imatge: ${errorMsg}`);
-    }
-  };
+  // Utilizamos el servicio de storage para gestionar la subida de archivos
   
   const removeImage = () => {
     if (imagePreview) {
@@ -344,15 +255,15 @@ export default function CrearNoticiaPage() {
       
       // Verificar que la imagen esté en formData si se subió una imagen
       if (imagePreview && !formData.imagen_url) {
-        console.error('Imagen subida pero la URL no está en formData');
-        throw new Error('La imagen se ha subido pero no se ha guardado la URL');
+        console.error('Imatge pujada però la URL no està en formData');
+        throw new Error('La imatge s\'ha pujat però no s\'ha desat la URL');
       }
       
-      console.log('Guardando noticia con los siguientes datos:', {
+      console.log('Desant notícia amb les següents dades:', {
         titulo: formData.titulo,
         fecha: formData.fecha,
         categoria: formData.categoria || 'No definida',
-        imagen_url: formData.imagen_url || 'No hay imagen'
+        imagen_url: formData.imagen_url || 'Sense imatge'
       });
       
       // Crear noticia
@@ -360,20 +271,21 @@ export default function CrearNoticiaPage() {
       const noticia = await crearNoticia({
         titulo: formData.titulo,
         contenido: formData.contenido,
+        fecha: formData.fecha,
         autor: formData.autor || undefined,
         categoria: formData.categoria || undefined,
         destacada: formData.destacada,
         imagen_url: formData.imagen_url || undefined
       });
       
-      console.log('Noticia creada exitosamente con ID:', noticia.id);
-      console.log('URL de imagen guardada:', noticia.imagen_url || 'No hay imagen');
+      console.log('Notícia creada correctament amb ID:', noticia.id);
+      console.log('URL d\'imatge desada:', noticia.imagen_url || 'Sense imatge');
       
       // Redirigir a la lista de noticias
       router.push('/dashboard/noticies');
     } catch (error) {
-      console.error("Error al crear noticia:", error);
-      alert("Ha ocurrido un error al crear la noticia. Inténtalo de nuevo.");
+      console.error("Error al crear notícia:", error);
+      alert("S'ha produït un error en crear la notícia. Torna-ho a provar.");
     } finally {
       setIsSubmitting(false);
     }
@@ -493,7 +405,7 @@ export default function CrearNoticiaPage() {
                         {/* Listas */}
                         <div className="border-r border-gray-300 pr-2 mr-2 flex space-x-1">
                           <button 
-                            type="button" 
+                            type="button"
                             onClick={() => handleToolbarAction('ol')}
                             className="p-1 hover:bg-gray-200 rounded" 
                             title="Llista ordenada"
@@ -501,7 +413,7 @@ export default function CrearNoticiaPage() {
                             <span className="font-mono">1.</span>
                           </button>
                           <button 
-                            type="button" 
+                            type="button"
                             onClick={() => handleToolbarAction('ul')}
                             className="p-1 hover:bg-gray-200 rounded" 
                             title="Llista no ordenada"
@@ -583,7 +495,7 @@ export default function CrearNoticiaPage() {
                       <div className="bg-gray-50 p-3 text-sm text-gray-500 border-b flex items-center justify-between">
                         <span>Vista prèvia de com es veurà la notícia publicada</span>
                         <button 
-                          type="button" 
+                          type="button"
                           onClick={() => setIsPreview(false)}
                           className="text-red-600 hover:text-red-800 text-sm font-medium focus:outline-none"
                         >

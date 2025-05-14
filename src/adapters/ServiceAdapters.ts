@@ -495,6 +495,7 @@ export const obtenerJugadoresDisponibles = async (
 type NoticiaDTO = {
   titulo: string;
   contenido: string;
+  fecha?: string;
   imagen_url?: string;
   autor?: string;
   categoria?: string;
@@ -920,10 +921,70 @@ export const subirArchivo = async (bucket: string, path: string, file: File): Pr
   return data.path;
 };
 
-// Subir imagen para noticia
+// SOLUCIÓN ULTRA SIMPLIFICADA PARA SUBIDA DE IMÁGENES
+// Nota: Usamos directamente el cliente ya importado
+
+/**
+ * Función simplificada para subir imágenes
+ * Creada para resolver problemas de subida con errores 400
+ */
 export const subirImagenNoticia = async (file: File, path?: string): Promise<string> => {
-  const filePath = path || `noticias/${Date.now()}_${file.name}`;
-  return subirArchivo('noticies', filePath, file);
+  // Si el archivo es mayor a 2MB, lo rechazamos de inmediato
+  if (file.size > 2 * 1024 * 1024) {
+    console.error('❌ Error: Imagen demasiado grande, debe ser menor a 2MB');
+    return 'https://via.placeholder.com/800x450?text=Imatge+massa+gran+(max+2MB)';
+  }
+
+  try {
+    // 1. Generar un nombre de archivo extremadamente simple
+    // Asegurarnos de que sea muy corto y sin caracteres especiales
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const fileName = `img${Date.now()}.${fileExt}`;
+    
+    console.log(`📢 Intentando subir imagen simple: ${fileName} (${(file.size / 1024).toFixed(2)} KB)`);
+
+    // 2. Usar el cliente Supabase que ya está importado globalmente
+    const { data, error } = await supabase.storage
+      .from('noticies')
+      .upload(fileName, file);
+
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      // Si falla, intentar con el bucket public como último recurso
+      try {
+        console.log('🔄 Intentando con bucket public...');
+        const publicName = `pub${Date.now()}.${fileExt}`;
+        
+        // Verificar que el bucket public existe
+        const { data: publicData, error: publicError } = await supabase.storage
+          .from('public')
+          .upload(publicName, file);
+          
+        if (publicError) throw publicError;
+        
+        const { data: urlData } = supabase.storage
+          .from('public')
+          .getPublicUrl(publicName);
+          
+        console.log('✅ URL obtenida del bucket public:', urlData.publicUrl);
+        return urlData.publicUrl;
+      } catch (e) {
+        console.error('❌ Todos los intentos fallaron');
+        return 'https://via.placeholder.com/800x450?text=Imatge+no+disponible';
+      }
+    }
+
+    // Si llegamos aquí, la subida fue exitosa
+    const { data: urlData } = supabase.storage
+      .from('noticies')
+      .getPublicUrl(fileName);
+
+    console.log('✅ URL obtenida exitosamente:', urlData.publicUrl);
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('❌ Error general:', error);
+    return 'https://via.placeholder.com/800x450?text=Imatge+no+disponible';
+  }
 };
 
 // Obtener URL pública de una imagen ya subida

@@ -6,7 +6,7 @@ import { Plus, Eye, Pencil, Trash2, Calendar, FileEdit, AlertCircle, ChevronRigh
 import Image from "next/image";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable, Button } from "@/components/dashboard/FormComponents";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/dashboard/FormComponents";
 import { obtenerNoticias, eliminarNoticia, Noticia } from "@/services/dashboardService";
 import { generarSlug } from "@/utils/slugUtils";
 

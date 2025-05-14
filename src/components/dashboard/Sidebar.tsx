@@ -67,9 +67,9 @@ const navItems = [
     href: "/dashboard/calendari" 
   },
   { 
-    label: "Registre Sessions", 
-    icon: History, 
-    href: "/dashboard/logs" 
+    label: "Portada", 
+    icon: Newspaper, 
+    href: "/dashboard/portada" 
   },
   { 
     label: "Configuració", 

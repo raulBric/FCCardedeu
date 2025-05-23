@@ -2,7 +2,7 @@
 
 // import { headers } from 'next/headers'
 // Importar directamente usando ruta relativa explícita
-import { stripe } from '../lib/stripe'
+import { stripe } from '../../lib/stripe'
 
 /**
  * Crea un PaymentIntent para el proceso de inscripción

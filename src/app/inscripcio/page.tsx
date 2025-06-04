@@ -314,7 +314,6 @@ export default function Page() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [showModal, setShowModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isPaying, setIsPaying] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -536,7 +535,7 @@ export default function Page() {
   }
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Validar todos los pasos antes de enviar
     for (let i = 1; i <= 3; i++) {
@@ -545,75 +544,73 @@ export default function Page() {
         return
       }
     }
-    
-    // Guardamos los datos del formulario en localStorage para el proceso de pago
-    localStorage.setItem('inscripcionFormData', JSON.stringify(formData))
 
-    setIsSubmitting(true)
-    setSubmitError(null)
+    // Crear objeto de datos para la inscripción que se enviará a Stripe metadata
+    const inscripcionParaMetadata = {
+      playerName: formData.playerName,
+      birthDate: formData.birthDate,
+      playerDNI: formData.playerDNI,
+      healthCard: formData.healthCard,
+      team: formData.team,
+      parentName: formData.parentName,
+      contactPhone1: formData.contactPhone1,
+      contactPhone2: formData.contactPhone2,
+      altContact: formData.altContact,
+      email1: formData.email1,
+      email2: formData.email2,
+      address: formData.address,
+      city: formData.city,
+      postalCode: formData.postalCode,
+      school: formData.school,
+      shirtSize: formData.shirtSize,
+      siblingsInClub: formData.siblingsInClub,
+      seasonsInClub: formData.seasonsInClub,
+      bankAccount: formData.bankAccount,
+      comments: formData.comments,
+      acceptTerms: formData.acceptTerms,
+      temporada: '2024-2025', // Add temporada if not already in formData
+      created_at: new Date().toISOString(), // For webhook to use if it creates the record
+    };
+
+    setIsSubmitting(true);
 
     try {
-      // Asegurarse de que la tabla existe (creación perezosa)
-      await configurarTablaInscripcions()
+      const amount = 50; // 50 EUR
+      const description = `Inscripció FC Cardedeu - ${formData.playerName}`;
 
-      // Conexión con Supabase
-      const supabase = createClientComponentClient()
+      const response = await fetch('/api/checkout_sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount,
+          description,
+          inscripcionData: inscripcionParaMetadata, // Pass the data to be stored in metadata
+        }),
+      });
 
-      // Configurar datos para la inserción
-      const insertData = {
-        player_name: formData.playerName,
-        birth_date: formData.birthDate,
-        player_dni: formData.playerDNI,
-        health_card: formData.healthCard,
-        team: formData.team,
-        parent_name: formData.parentName,
-        contact_phone1: formData.contactPhone1,
-        contact_phone2: formData.contactPhone2,
-        alt_contact: formData.altContact,
-        email1: formData.email1,
-        email2: formData.email2,
-        address: formData.address,
-        city: formData.city,
-        postal_code: formData.postalCode,
-        school: formData.school,
-        shirt_size: formData.shirtSize,
-        siblings_in_club: formData.siblingsInClub,
-        seasons_in_club: formData.seasonsInClub,
-        bank_account: formData.bankAccount,
-        comments: formData.comments,
-        accept_terms: formData.acceptTerms
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al iniciar el procés de pagament');
       }
 
-      // Inserción mediante función RPC para sortear RLS y centralitzar la lógica
-      const { data, error } = await supabase.rpc('insert_inscripcio', {
-        new_row: insertData,
-      })
-
-      if (error) {
-        console.error('Error en inserción vía RPC:', error)
-        const errorMessage = error.message || error.details || 'Error desconegut'
-        setSubmitError(`Hi ha hagut un error en enviar les dades: ${errorMessage}. Si us plau, contacta amb el club.`)
-        return
+      const session = await response.json();
+      if (session.url) {
+        // Redirect to Stripe Checkout page
+        window.location.href = session.url;
+      } else {
+        throw new Error('No s\u0027ha pogut obtenir la URL de pagament de Stripe.');
       }
-
-      console.log('Inserción vía RPC correcta:', data)
-      setCurrentStep(4)
-      window.scrollTo(0, 0)
-    } catch (error: unknown) {
-      console.error("Error:", error)
-      // Mostrar detalles del error para facilitar la depuración
-      const errorMessage = typeof error === 'object' && error !== null ? 
-        ((error as {message?: string}).message || JSON.stringify(error)) : 
-        String(error);
-      
-      console.log('Error completo:', error);
-      console.log('Mensaje de error:', errorMessage);
-      
-      setSubmitError(`Hi ha hagut un error en enviar les dades: ${errorMessage}. Si us plau, contacta amb el club.`)
+    } catch (error: any) {
+      console.error("Error en handleSubmit al iniciar pagament:", error);
+      setSubmitError(
+        `Hi ha hagut un error en iniciar el pagament: ${error.message || 'Error desconegut'}. Si us plau, contacta amb el club.`
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const nextStep = () => {
     // Validar el paso actual antes de avanzar
@@ -759,11 +756,11 @@ export default function Page() {
                       required
                     />
                   </div>
-                  <div className={selectWrapperClass}>
+                  <div>
                     <label className="block font-medium text-gray-700 mb-1">
-                      EQUIP TEMPORADA 2024-2025 <span className="text-red-500">*</span>
+                      EQUIP TEMPORADA 2025-2026 <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
+                    <div className={selectWrapperClass}>
                       <select
                         name="team"
                         value={formData.team}
@@ -1158,7 +1155,7 @@ export default function Page() {
             )}
 
             {/* Paso 4: Confirmación (sin formulario de pago visible) */}
-            {currentStep === 4 && !isPaying && (
+            {currentStep === 4 && !isSubmitting && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -1185,7 +1182,7 @@ export default function Page() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button
                     type="button"
-                    onClick={() => setIsPaying(true)}
+                    onClick={() => setIsSubmitting(true)}
                     className="px-6 py-3 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 transition flex items-center justify-center"
                   >
                     <CreditCard className="mr-2 w-5 h-5" /> Realitzar pagament ara
@@ -1202,82 +1199,38 @@ export default function Page() {
               </motion.div>
             )}
             
-            {/* Paso 4: Formulario de pago con Stripe */}
-            {currentStep === 4 && isPaying && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="bg-white p-6 rounded-lg shadow-md"
-              >
-                <div className="flex justify-between items-center mb-6 pb-2 border-b">
-                  <h2 className="text-xl font-semibold text-gray-800">Pagament de la inscripció</h2>
-                  <button 
-                    onClick={() => setIsPaying(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-                
-                {submitError && (
-                  <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700">
-                    <div className="flex items-center">
-                      <AlertCircle className="w-5 h-5 mr-2" />
-                      <span>{submitError}</span>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="mb-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Inscripció FC Cardedeu</span>
-                    <span className="font-medium">150€</span>
-                  </div>
-                  <div className="border-t pt-2 mt-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Total</span>
-                      <span className="font-bold">150€</span>
+            {/* Paso 4: Redirección a Stripe */}
+            {currentStep === 4 && isSubmitting && (
+              <div className="max-w-4xl mx-auto px-4 py-6">
+                <div className="flex items-center justify-center">
+                  <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                    <div className="text-center">
+                      <svg
+                        className="animate-spin h-12 w-12 text-blue-600 mx-auto"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <h3 className="text-lg font-semibold mt-4 text-gray-800">Redirigint al pagament segur...</h3>
+                      <p className="text-gray-600 mt-2">Si us plau, espera un moment.</p>
                     </div>
                   </div>
                 </div>
-                
-                {/* Mostrar el formulario de pago de Stripe Elements */}
-                {stripePromise && (
-                  <Elements 
-                    stripe={stripePromise} 
-                    options={{
-                      locale: 'es',
-                      appearance: {
-                        theme: 'flat',
-                        variables: {
-                          colorPrimary: '#e11d48', // color rojo del club
-                          colorBackground: '#ffffff',
-                          colorText: '#30313d',
-                        },
-                      },
-                    }}
-                  >
-                    <StripePaymentForm 
-                      email={formData.email1 || ''} 
-                      playerDNI={formData.playerDNI || ''} 
-                      setSubmitError={setSubmitError} 
-                      setIsPaying={setIsPaying}
-                      isPaying={isPaying}
-                    />
-                  </Elements>
-                )}
-                
-                <div className="mt-4 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setIsPaying(false)}
-                    className="px-4 py-2 text-gray-600 font-medium hover:underline transition flex items-center"
-                  >
-                    <ChevronLeft className="mr-1 w-4 h-4" /> Tornar al resum
-                  </button>
-                </div>
-              </motion.div>
+              </div>
             )}
           </form>
         </div>

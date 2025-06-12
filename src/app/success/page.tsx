@@ -1,26 +1,20 @@
 "use client";
 
-import { Metadata } from 'next'
-import { redirect } from 'next/navigation'
-import Stripe from 'stripe'
-import { stripe } from '../../lib/stripe'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { configurarTablaInscripcions } from '@/services/configurarTablaInscripcions'
 import { Check, AlertCircle } from 'lucide-react'
+import { useSearchParams, useRouter } from 'next/navigation'
 
-// Define tipos para los parámetros de búsqueda
-type SearchParams = {
-  session_id?: string
-}
+// Valores de Supabase para asegurar disponibilidad en el cliente
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://aiuizlmgicsqsrqdasgv.supabase.co'
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpdWl6bG1naWNzcXNycWRhc2d2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0MjI4ODQsImV4cCI6MjA2MDk5ODg4NH0.vtwbwq7iahAIHCd3Y8afZIGBsZZxXz2fHsS6wJDAgwo'
 
-export const metadata: Metadata = {
-  title: 'Pago Exitoso | FC Cardedeu',
-  description: 'Gracias por tu pago. Tu inscripción ha sido procesada correctamente.',
-}
-
-export default function Success({ searchParams }: { searchParams: SearchParams }) {
-  const { session_id } = searchParams
+export default function Success() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const sessionId = searchParams.get('session_id')
+  
   const [isLoading, setIsLoading] = useState(true)
   const [isSuccess, setIsSuccess] = useState(false)
   const [isError, setIsError] = useState(false)
@@ -28,53 +22,66 @@ export default function Success({ searchParams }: { searchParams: SearchParams }
   const [sessionData, setSessionData] = useState<any>(null)
   const [inscripcionId, setInscripcionId] = useState<number | null>(null)
 
-  useEffect(() => {
-    if (!session_id) {
-      setIsError(true)
-      setErrorMessage('No se ha proporcionado un ID de sesión válido')
-      setIsLoading(false)
-      return
-    }
+  // Separar la lógica de procesamiento de pagos en su propia función
+  const processPayment = useCallback(async (session_id: string) => {
+    try {
+      // 1. Verificar el estado del pago
+      const response = await fetch(`/api/verify_payment?session_id=${session_id}`)
+      const data = await response.json()
 
-    const processPayment = async () => {
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Error al verificar el pago')
+      }
+
+      setSessionData(data.session)
+
+      // 2. Obtener los datos de inscripción guardados en localStorage
+      let inscripcionData: Record<string, any> = {}
       try {
-        // 1. Verificar el estado del pago
-        const response = await fetch(`/api/verify_payment?session_id=${session_id}`)
-        const data = await response.json()
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Error al verificar el pago')
-        }
-
-        setSessionData(data.session)
-
-        // 2. Obtener los datos de inscripción guardados en localStorage
         const pendingInscripcionStr = localStorage.getItem('pendingInscripcion')
         if (!pendingInscripcionStr) {
-          throw new Error('No se encontraron los datos de la inscripción')
+          throw new Error('No se encontraron los datos de la inscripción. Por favor, vuelve a realizar el proceso.')
         }
 
-        const inscripcionData = JSON.parse(pendingInscripcionStr)
+        inscripcionData = JSON.parse(pendingInscripcionStr) as Record<string, any>
+        
+        // Validar datos mínimos
+        if (!inscripcionData.playerName || !inscripcionData.email1 || !inscripcionData.payment_type) {
+          console.error('Datos de inscripción incompletos:', Object.keys(inscripcionData))
+          throw new Error('Los datos de inscripción están incompletos o corruptos')
+        }
+      } catch (localStorageError) {
+        console.error('Error al recuperar datos del localStorage:', localStorageError)
+        throw new Error('No se pudieron recuperar los datos de inscripción. Es posible que la sesión haya expirado.')
+      }
 
-        // 3. Guardar los datos en Supabase
+      // 3. Guardar los datos en Supabase
+      try {
         // Asegurarse de que la tabla existe
         await configurarTablaInscripcions()
         
-        // Conexión con Supabase
-        const supabase = createClientComponentClient()
+        // Conexión con Supabase con valores explícitos
+        const supabase = createClientComponentClient({
+          supabaseUrl: SUPABASE_URL,
+          supabaseKey: SUPABASE_ANON_KEY
+        })
         
         // Agregar el ID de la sesión de pago
-        inscripcionData.payment_session_id = session_id
-        inscripcionData.payment_status = 'completed'
+        const paymentData = {
+          ...inscripcionData,
+          payment_session_id: session_id,
+          payment_status: 'completed',
+          updated_at: new Date().toISOString()
+        }
         
         // Inserción mediante función RPC para sortear RLS
         const { data: insertData, error } = await supabase.rpc('insert_inscripcio', {
-          new_row: inscripcionData,
+          new_row: paymentData,
         })
 
         if (error) {
           console.error('Error en inserción vía RPC:', error)
-          throw new Error(error.message || error.details || 'Error al guardar la inscripción')
+          throw new Error(error.message || 'Error al guardar la inscripción en la base de datos')
         }
 
         // Si llegamos aquí, todo ha ido bien
@@ -82,20 +89,40 @@ export default function Success({ searchParams }: { searchParams: SearchParams }
         setIsSuccess(true)
         
         // Limpiar localStorage ya que ya no necesitamos los datos
-        localStorage.removeItem('pendingInscripcion')
-        localStorage.removeItem('inscripcionFormData')
-
-      } catch (error: any) {
-        console.error('Error al procesar la inscripción:', error)
-        setIsError(true)
-        setErrorMessage(error.message || 'Ha ocurrido un error al procesar tu inscripción')
-      } finally {
-        setIsLoading(false)
+        try {
+          localStorage.removeItem('pendingInscripcion')
+          // Ya no es necesario eliminar inscripcionFormData porque hemos unificado todo en pendingInscripcion
+        } catch (cleanupError) {
+          // Sólo log, no fallo crítico
+          console.warn('Error al limpiar localStorage:', cleanupError)
+        }
+      } catch (supabaseError: any) {
+        console.error('Error con Supabase:', supabaseError)
+        throw new Error(`Error al guardar los datos: ${supabaseError.message || 'Error desconocido'}`)
       }
-    }
 
-    processPayment()
-  }, [session_id])
+    } catch (error: any) {
+      console.error('Error al procesar la inscripción:', error)
+      setIsError(true)
+      setErrorMessage(error.message || 'Ha ocurrido un error al procesar tu inscripción')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Ejecutar al montar el componente
+  useEffect(() => {
+    if (!sessionId) {
+      setIsError(true)
+      setErrorMessage('No se ha proporcionado un ID de sesión válido')
+      setIsLoading(false)
+      return
+    }
+    
+    // Iniciar el procesamiento del pago
+    processPayment(sessionId);
+    
+  }, [sessionId, processPayment])
 
   // Pantalla de carga
   if (isLoading) {
@@ -125,7 +152,7 @@ export default function Success({ searchParams }: { searchParams: SearchParams }
           <p className="text-sm text-gray-600 mb-6">
             Si has realitzat el pagament correctament però veus aquest missatge, si us plau contacta amb el club a{' '}
             <a href="mailto:info@fccardedeu.cat" className="underline">info@fccardedeu.cat</a>{' '}
-            amb el teu ID de sessió: <span className="font-mono bg-gray-100 p-1 rounded">{session_id}</span>
+            amb el teu ID de sessió: <span className="font-mono bg-gray-100 p-1 rounded">{sessionId}</span>
           </p>
           <button 
             onClick={() => window.location.href = '/'}
@@ -158,7 +185,7 @@ export default function Success({ searchParams }: { searchParams: SearchParams }
               <span className="font-semibold">ID d'inscripció:</span> {inscripcionId}
             </p>
             <p className="text-sm text-gray-700">
-              <span className="font-semibold">ID de pagament:</span> {session_id?.substring(0, 16)}...
+              <span className="font-semibold">ID de pagament:</span> {sessionId?.substring(0, 16)}...
             </p>
           </div>
           <p className="text-sm text-gray-600 mb-6">

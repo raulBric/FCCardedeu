@@ -50,41 +50,117 @@ export async function createPaymentIntent(formData: FormData | Record<string, an
 /**
  * Crea una sesión de Checkout para el proceso de inscripción
  * Utilizada por el componente EmbeddedCheckout
+ * @param paymentOption - Opción de pago: 'parcial' para pago de 100€, 'completo' para pago de 260€
  */
-export async function fetchClientSecret() {
+export async function fetchClientSecret(paymentOption: 'parcial' | 'completo' = 'completo') {
   try {
-    // URL base para redirecciones - usando valor fijo para evitar problemas con headers()
-    const origin = 'https://fccardedeu.cat';
+    console.log('Creando PaymentIntent con opción:', paymentOption);
     
-    // Si estamos en desarrollo, usar localhost
+    // Obtener la URL base desde las variables de entorno si existe, o usar una URL por defecto
+    let origin = 'https://fccardedeu.org'; // URL por defecto para producción
+    
     if (process.env.NODE_ENV === 'development') {
-      console.log('Modo desarrollo detectado');
+      // Intentar usar la URL de desarrollo configurada - esto permite usar IPs locales como 192.168.0.14:3000
+      origin = process.env.NEXT_PUBLIC_DEVELOPMENT_URL || 'http://localhost:3000';
+      console.log('Modo desarrollo detectado - usando URL base:', origin);
+    }
+    
+    // Forzar HTTPS en producción para evitar problemas con Safari
+    // En desarrollo mantenemos el protocolo original (podría ser http)
+    const secureOrigin = process.env.NODE_ENV === 'development' 
+      ? origin 
+      : origin.replace('http:', 'https:');
+
+    // Determinar el producto y precio según la opción seleccionada
+    // Configurar producto y precio según el tipo de pago
+    
+    // ID de producto para entorno de desarrollo
+    let productId = 'prod_ST4WKzSo96ErCw'; // ID de producto para desarrollo
+    
+    // IDs de producto para entorno de producción (comentados)
+    // Descomentar estos IDs y comentar el anterior para producción
+    // if (process.env.NODE_ENV !== 'development') {
+    //   if (paymentOption === 'parcial') {
+    //     productId = 'prod_OnZSK2AAcxnfhg'; // ID para opción parcial
+    //   } else {
+    //     productId = 'prod_OnZRixAcDY8h8h'; // ID para opción completa
+    //   }
+    // }
+
+    let amount, description;
+    
+    if (paymentOption === 'parcial') {
+      // Opción de pago PARCIAL (100€)
+      amount = 10000; // 100€ en céntimos
+      description = 'Pago parcial (100€)';
+      console.log('Configurando pago PARCIAL de 100€');
+    } else {
+      // Opción de pago COMPLETO (260€) - por defecto
+      amount = 26000; // 260€ en céntimos
+      description = 'Pago completo (260€)';
+      console.log('Configurando pago COMPLETO de 260€');
     }
 
-    // Crear sesión de Checkout
+    // Crear una sesión de Checkout en lugar de usar PaymentIntent directamente
+    console.log(`Creando sesión de Checkout con monto: ${amount/100}€ (${paymentOption})`);
+    
+    // Crear una sesión de checkout con URLs de éxito y cancelación
     const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded',
+      payment_method_types: ['card'],
       line_items: [
         {
           price_data: {
             currency: 'eur',
-            unit_amount: 15000, // 150€ en céntimos
             product_data: {
-              name: 'Inscripció FC Cardedeu',
-              description: 'Temporada 2024-2025',
-              images: ['https://fccardedeu.cat/images/logo-fcc.png'],
+              name: `Inscripció FC Cardedeu - ${description}`,
             },
+            unit_amount: amount,
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      return_url: `${origin}/inscripcio/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/inscripcio`,
+      success_url: `${secureOrigin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${secureOrigin}/inscripcio`,
+      billing_address_collection: 'auto',
+      submit_type: 'pay',
+      customer_creation: 'always',
+      metadata: {
+        payment_type: paymentOption,  // 'parcial' o 'completo'
+        amount: amount.toString(),    // Monto en céntimos
+        temporada: '2024-2025',       // Temporada actual
+        product_id: productId,
+      },
     });
-
-    console.log('Checkout Session creada:', session.id);
-    return session.client_secret;
+    
+    console.log('Sesión de Checkout creada:', session.id);
+    
+    // Verificar que tenemos una URL válida para la sesión
+    if (!session.url) {
+      throw new Error('No se pudo obtener la URL de la sesión de pago');
+    }
+    
+    let finalUrl = session.url;
+    
+    // En producción, asegurar que la URL use HTTPS (importantes para Safari/iOS)
+    if (process.env.NODE_ENV !== 'development') {
+      finalUrl = finalUrl.replace('http:', 'https:');
+    }
+    
+    // En desarrollo, personalizar la URL si estamos usando una IP local
+    if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_DEVELOPMENT_URL) {
+      // Verificar si estamos usando una IP personalizada
+      const customDevUrl = process.env.NEXT_PUBLIC_DEVELOPMENT_URL;
+      if (customDevUrl !== 'http://localhost:3000') {
+        // Reemplazar localhost por la IP personalizada en la URL de redirección
+        finalUrl = finalUrl.replace('localhost:3000', customDevUrl.replace(/^https?:\/\//, ''));
+      }
+    }
+    
+    console.log('URL de redirección de pago final:', finalUrl);
+    
+    // Retornar la URL preparada para la plataforma
+    return finalUrl;
   } catch (error: any) {
     console.error('Error al crear sesión de Checkout:', error);
     throw new Error(`Error al inicializar el pago: ${error.message}`);

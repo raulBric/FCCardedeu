@@ -48,6 +48,28 @@ export async function POST(req: NextRequest) {
       // Obtener los datos directamente de los campos de metadatos
       const metadata = session.metadata;
       
+      // Determinar tipo de pago y estado correspondiente
+      const paymentType = metadata?.payment_type || 'completo';
+      const productId = metadata?.product_id || '';
+      const paymentAmount = metadata?.amount ? parseInt(metadata.amount, 10) : 0;
+      
+      // Determinar estado según el tipo de pago
+      let estadoPago;
+      let importePagado = 0;
+      let importePendiente = 0;
+      
+      if (paymentType === 'parcial') {
+        estadoPago = 'pago_parcial'; // Estado para pagos parciales
+        importePagado = 100; // 100€ para pago parcial
+        importePendiente = 160; // 160€ pendientes
+        console.log(`Pago parcial recibido (${importePagado}€). Pendiente: ${importePendiente}€`);
+      } else {
+        estadoPago = 'pagado'; // Estado para pagos completos
+        importePagado = 260; // 260€ para pago completo
+        importePendiente = 0; // Nada pendiente
+        console.log(`Pago completo recibido (${importePagado}€). Nada pendiente.`);
+      }
+      
       // Add payment status and Stripe session ID
       const dataToSave: any = {
         // Datos del jugador
@@ -79,7 +101,12 @@ export async function POST(req: NextRequest) {
         comments: metadata.comments || '',
         accept_terms: metadata.accept_terms === 'true',
         
-        estado: 'pagado', // Or 'completado', 'activo'
+        // Estado y datos de pago
+        estado: estadoPago,
+        tipo_pago: paymentType,
+        importe_pagado: importePagado,
+        importe_pendiente: importePendiente,
+        producto_stripe: productId,
         temporada: metadata.temporada || '2024-2025',
         stripe_payment_id: session.payment_intent as string || '', // Store the payment intent ID
         stripe_checkout_session_id: session.id, // Store the checkout session ID

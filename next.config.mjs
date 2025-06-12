@@ -17,10 +17,20 @@ const nextConfig = {
   // Configure image domains for the FC Cardedeu project
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname,
-      },
+      // Supabase URL - usando una validación segura para evitar errores cuando la variable no está disponible
+      ...((process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL.startsWith('http')) ? [
+        {
+          protocol: 'https',
+          hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname,
+        }
+      ] : [
+        // Fallback para desarrollo cuando la variable no está disponible
+        {
+          protocol: 'https',
+          hostname: 'aiuizlmgicsqsrqdasgv.supabase.co',
+        }
+      ]),
+      // Otros dominios de imágenes seguros
       {
         protocol: 'https',
         hostname: 'i.imgur.com',

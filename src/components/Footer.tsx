@@ -187,6 +187,13 @@ export default function Footer() {
               </Link>
             </div>
           </div>
+          
+          {/* Créditos digital.io */}
+          <div className="border-t border-gray-700 mt-6 pt-4 text-center">
+            <p className="text-xs text-gray-500">
+              Impulsa tu presencia digital con <a href="https://dgital.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">dgital.io</a> | Expertos en transformación web
+            </p>
+          </div>
         </div>
       </div>
     </footer>

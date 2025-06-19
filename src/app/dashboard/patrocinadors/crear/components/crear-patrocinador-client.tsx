@@ -3,15 +3,14 @@
 import { useState, ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Save, ArrowLeft, Upload } from "lucide-react";
-import Image from "next/image";
 import { 
   Button, 
-  Card, 
   InputField, 
   SelectField, 
   CheckboxField, 
   FileUpload 
 } from "@/components/dashboard/FormComponents";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { 
   crearPatrocinador, 
   subirArchivo, 
@@ -146,10 +145,11 @@ export default function CrearPatrocinadorClient() {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card 
-          title="Informació del patrocinador" 
-          className="lg:col-span-2"
-        >
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Informació del patrocinador</CardTitle>
+          </CardHeader>
+          <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <InputField 
@@ -225,19 +225,23 @@ export default function CrearPatrocinadorClient() {
               </div>
             </div>
           </form>
+          </CardContent>
         </Card>
         
         <div>
-          <Card title="Previsualització">
-            <div className="p-4 flex flex-col items-center">
+          <Card>
+            <CardHeader>
+              <CardTitle>Previsualització</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center">
               <div className="w-48 h-32 mb-4 flex items-center justify-center border border-gray-200 rounded-md bg-gray-50">
                 {logoPreview ? (
-                  <Image 
+                  <img 
                     src={logoPreview} 
                     alt={formData.nombre || 'Logo preview'} 
                     className="max-w-full max-h-full object-contain"
-                    width={192}
-                    height={128}
+                    width="192"
+                    height="128"
                   />
                 ) : (
                   <div className="text-center text-gray-400">
@@ -263,14 +267,17 @@ export default function CrearPatrocinadorClient() {
                   Visitar web
                 </a>
               )}
-            </div>
+            </CardContent>
           </Card>
           
-          <Card title="Ajuda" className="mt-4">
-            <div className="p-4 text-sm space-y-3">
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Ajuda</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-3">
               <p>La imatge del logo ha de ser en format PNG o JPG amb fons transparent sempre que sigui possible.</p>
               <p>Els patrocinadors principals es mostren amb més prominència al web.</p>
-            </div>
+            </CardContent>
           </Card>
         </div>
       </div>

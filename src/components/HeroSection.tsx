@@ -156,12 +156,12 @@ export default function HeroSection() {
               index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
           >
-            <Image
-              src={imatge.src || "/placeholder.svg"}
+            <img
+              src={typeof imatge.src === 'string' ? imatge.src : imatge.src?.src || "/placeholder.svg"}
               alt={imatge.alt}
-              fill
-              priority={index === 0}
-              sizes="100vw"
+              fetchPriority={index === 0 ? "high" : "low"}
+              loading={index === 0 ? "eager" : "lazy"}
+              className="absolute inset-0 w-full h-full"
               style={{
                 objectFit: "cover",
                 objectPosition: "center",

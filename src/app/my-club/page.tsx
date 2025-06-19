@@ -288,11 +288,13 @@ export default function MyClubPage() {
 
       {/* 🔹 Sección Imagen */}
       <div className="md:w-2/3 w-full flex items-center justify-center bg-club-primary">
-        <Image
-          src={Escudo}
+        <img
+          src={Escudo.src}
           alt="FC Cardedeu"
+          width="300"
+          height="300"
           className="w-2/3 max-w-sm md:w-1/2 lg:w-1/3 xl:w-1/4"
-          priority
+          fetchPriority="high"
         />
       </div>
 

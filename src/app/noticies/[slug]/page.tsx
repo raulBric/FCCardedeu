@@ -181,11 +181,13 @@ export default function NoticiaDetallePage() {
           {noticia.imagen_url && (
             <div className="max-w-3xl mx-auto mb-10 rounded-lg overflow-hidden shadow-lg">
               <div className="relative h-[250px] sm:h-[300px] md:h-[400px] w-full">
-                <Image 
+                <img 
                   src={noticia.imagen_url} 
                   alt={noticia.titulo}
-                  width={1200}
-                  height={800}
+                  width="1200"
+                  height="800"
+                  loading="eager"
+                  fetchPriority="high"
                   className="w-full h-full object-cover"
                 />
               </div>

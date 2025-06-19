@@ -121,11 +121,12 @@ export default function PaymentPage() {
                 <div className="space-y-4">
                   <div className="flex justify-center mb-6">
                     <div className="relative w-24 h-24">
-                      <Image
-                        src={Escudo}
+                      <img
+                        src={Escudo.src}
                         alt="FC Cardedeu"
-                        fill
-                        className="object-contain"
+                        width="96"
+                        height="96"
+                        className="object-contain absolute inset-0 w-full h-full"
                       />
                     </div>
                   </div>

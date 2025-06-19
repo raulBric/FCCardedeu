@@ -151,11 +151,12 @@ export default function SponsorsSection() {
                   <div className="absolute inset-0 bg-gradient-to-tr from-club-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                   <div className="relative z-10">
                     <div className="relative h-40 flex items-center justify-center">
-                      <Image
-                        src={patrocinadorPrincipal.logo}
+                      <img
+                        src={typeof patrocinadorPrincipal.logo === 'string' ? patrocinadorPrincipal.logo : patrocinadorPrincipal.logo?.src || "/placeholder.svg"}
                         alt={patrocinadorPrincipal.name}
-                        width={300}
-                        height={150}
+                        width="300"
+                        height="150"
+                        loading="lazy"
                         style={{ objectFit: 'contain' }}
                         className="transition-transform duration-300 group-hover:scale-105"
                       />
@@ -199,12 +200,14 @@ export default function SponsorsSection() {
                     >
                       <div className="bg-white rounded-lg shadow-sm p-4 w-40 h-40 flex items-center justify-center hover:shadow-md transition-all duration-300">
                         <div className="relative w-32 h-32">
-                          <Image
-                            src={sponsor.logo}
+                          <img
+                            src={typeof sponsor.logo === 'string' ? sponsor.logo : sponsor.logo?.src || "/placeholder.svg"}
                             alt={sponsor.name}
-                            fill
+                            width="100%"
+                            height="100%"
+                            loading="lazy"
                             style={{ objectFit: 'contain' }}
-                            className="transition-all duration-300 group-hover:scale-110"
+                            className="absolute inset-0 transition-all duration-300 group-hover:scale-110"
                           />
                         </div>
                       </div>

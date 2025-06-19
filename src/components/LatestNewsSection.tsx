@@ -290,11 +290,12 @@ export default function LatestNewsSection({
                 >
                   <Link href={`/noticies/${item.slug}`} className="block relative">
                     <div className="relative h-48 w-full overflow-hidden">
-                      <Image
+                      <img
                         src={item.imageUrl || "/placeholder.svg"}
                         alt={item.title}
-                        width={400}
-                        height={300}
+                        width="400"
+                        height="300"
+                        loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>

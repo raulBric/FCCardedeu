@@ -221,11 +221,12 @@ function MatchCard({ match }: { match: (typeof matchResults)[0] }) {
       <div className="flex items-center justify-between w-full">
         {/* Equipo local */}
         <div className="flex flex-col items-center w-1/3">
-          <Image
-            src={match.homeLogo || "/placeholder.svg"}
+          <img
+            src={typeof match.homeLogo === 'string' ? match.homeLogo : match.homeLogo?.src || "/placeholder.svg"}
             alt={match.homeTeam}
-            width={80}
-            height={80}
+            width="80"
+            height="80"
+            loading="lazy"
             className="object-contain"
           />
           <span className="text-gray-800 text-sm sm:text-base font-semibold text-center min-h-[40px]">
@@ -240,11 +241,12 @@ function MatchCard({ match }: { match: (typeof matchResults)[0] }) {
 
         {/* Equipo visitante */}
         <div className="flex flex-col items-center w-1/3">
-          <Image
-            src={match.awayLogo || "/placeholder.svg"}
+          <img
+            src={typeof match.awayLogo === 'string' ? match.awayLogo : match.awayLogo?.src || "/placeholder.svg"}
             alt={match.awayTeam}
-            width={80}
-            height={80}
+            width="80"
+            height="80"
+            loading="lazy"
             className="object-contain"
           />
           <span className="text-gray-800 text-sm sm:text-base font-semibold text-center min-h-[40px]">
@@ -257,11 +259,13 @@ function MatchCard({ match }: { match: (typeof matchResults)[0] }) {
       <div className="mt-6 flex flex-col items-center">
         <p className="text-sm text-gray-600 mb-2">Patrocinado por:</p>
         <Link href={match.sponsor.url} target="_blank" className="block w-32 h-16 relative">
-          <Image
-            src={match.sponsor.logo || "/placeholder.svg"}
+          <img
+            src={typeof match.sponsor.logo === 'string' ? match.sponsor.logo : match.sponsor.logo?.src || "/placeholder.svg"}
             alt={match.sponsor.name}
-            fill
-            className="object-contain"
+            width="100%"
+            height="100%"
+            loading="lazy"
+            className="object-contain absolute inset-0"
           />
         </Link>
       </div>

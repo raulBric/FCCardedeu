@@ -31,13 +31,13 @@ export default function NotFound() {
           {/* Banderín como imagen */}
           <div className="relative flex justify-center py-4 sm:py-6 md:py-8 h-40 sm:h-48 md:h-56">
             <div className="relative h-full">
-              <Image
-                src={Banderin || "/placeholder.svg"}
+              <img
+                src={Banderin.src || "/placeholder.svg"}
                 alt="Banderí de línia"
-                width={150}
-                height={200}
+                width="150"
+                height="200"
                 className="h-full w-auto object-contain"
-                priority
+                fetchPriority="high"
               />
             </div>
           </div>

@@ -300,12 +300,13 @@ export default function DashboardPage() {
               {/* Imagen destacada */}
               {stats.ultimaNoticia?.imagen_url ? (
                 <div className="w-full h-40 relative">
-                  <Image 
-                    src={stats.ultimaNoticia.imagen_url} 
+                  <img
+                    src={stats.ultimaNoticia.imagen_url}
                     alt={stats.ultimaNoticia.titulo}
-                    className="w-full h-full object-cover" 
-                    width={500}
-                    height={160}
+                    className="w-full h-full object-cover"
+                    width="500"
+                    height="160"
+                    loading="lazy"
                   />
                   {stats.ultimaNoticia.destacada && (
                     <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-medium px-2 py-1 rounded-sm">

@@ -140,13 +140,13 @@ export default function Header() {
           className="flex items-center gap-2"
           aria-label="FC Cardedeu - Pàgina d'inici"
         >
-          <Image
-            src={Escudo}
+          <img
+            src={Escudo.src}
             alt="FC Cardedeu"
-            width={100}
-            height={100}
-            priority
+            width="100"
+            height="100"
             className="object-contain w-32 h-32"
+            fetchPriority="high"
           />
         </Link>
 
@@ -263,12 +263,13 @@ export default function Header() {
           >
             {/* Club Shield/Logo at the top center */}
             <div className="flex justify-center">
-              <Image
-                src={Escudo}
+              <img
+                src={Escudo.src}
                 alt="FC Cardedeu"
-                width={100}
-                height={100}
+                width="100"
+                height="100"
                 className="object-contain"
+                loading="lazy"
               />
             </div>
             <span className="text-white text-2xl font-bold text-center">

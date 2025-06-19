@@ -122,11 +122,12 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }: SidebarP
       `}
     >
         <div className="p-6 flex items-center justify-center border-b border-red-600">
-          <Image 
-            src={Escudo} 
-            alt="FC Cardedeu" 
-            width={80} 
-            height={80} 
+          <img
+            src={Escudo.src}
+            alt="FC Cardedeu"
+            width="80"
+            height="80"
+            fetchPriority="high"
             className="drop-shadow-lg"
           />
         </div>

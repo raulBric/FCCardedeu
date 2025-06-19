@@ -77,11 +77,13 @@ export default function RecuperarClavePage() {
 
       {/* 🔹 Sección Imagen */}
       <div className="md:w-2/3 w-full flex items-center justify-center bg-club-primary">
-        <Image
-          src={Escudo}
+        <img
+          src={Escudo.src}
           alt="FC Cardedeu"
           className="w-2/3 max-w-sm md:w-1/2 lg:w-1/3 xl:w-1/4"
-          priority
+          fetchPriority="high"
+          width="300"
+          height="300"
         />
       </div>
 

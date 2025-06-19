@@ -23,10 +23,13 @@ export default function Footer() {
               href="/"
               className="flex flex-col items-center md:items-start"
             >
-              <Image
-                src={Escudo || "/placeholder.svg"}
+              <img
+                src={Escudo?.src || "/placeholder.svg"}
                 alt="FC Cardedeu"
+                width="96"
+                height="96"
                 className="w-20 h-20 sm:w-24 sm:h-24 transition-all duration-300"
+                loading="lazy"
               />
               <span className="text-lg font-bold text-white mt-2">
                 FC Cardedeu

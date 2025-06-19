@@ -345,11 +345,12 @@ export default function PartidosPage() {
                   key={i}
                   className="bg-white p-2 rounded-md border border-gray-200 flex items-center justify-center h-12"
                 >
-                  <Image
+                  <img
                     src={`/placeholder.svg?height=30&width=80&text=LOGO ${i}`}
                     alt={`Patrocinador ${i}`}
-                    width={80}
-                    height={30}
+                    width="80"
+                    height="30"
+                    loading="lazy"
                     className="object-contain"
                   />
                 </div>

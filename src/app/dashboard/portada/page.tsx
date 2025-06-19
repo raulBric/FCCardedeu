@@ -465,11 +465,13 @@ export default function PortadaPage() {
                 <div key={item.id} className="p-4 hover:bg-gray-50 transition">
                   <div className="flex items-center">
                     <div className="relative w-16 h-16 mr-4 overflow-hidden rounded-md flex-shrink-0">
-                      <Image
+                      <img
                         src={item.imageUrl || "/placeholder.jpg"}
                         alt={item.title}
-                        className="object-cover"
-                        fill
+                        className="object-cover absolute inset-0 w-full h-full"
+                        width="64"
+                        height="64"
+                        loading="lazy"
                       />
                     </div>
                     

@@ -115,18 +115,88 @@ export async function POST(req: NextRequest) {
         updated_at: new Date().toISOString(),
       };
 
+      // Primero buscar si existe una inscripción con el mismo email para actualizar en vez de crear nueva
+      const email = metadata.email1 || '';
+      
+      if (email) {
+        console.log(`Buscando inscripción existente con email: ${email}`);
+        
+        // Buscar inscripción existente por email
+        const { data: existingData, error: searchError } = await supabaseAdmin
+          .from('inscripcions')
+          .select('id, estado')
+          .eq('email1', email)
+          .maybeSingle();
+        
+        if (searchError) {
+          console.error('Error al buscar inscripción existente:', searchError);
+        }
+        
+        // Si existe, actualizar en lugar de crear nueva
+        if (existingData && existingData.id) {
+          console.log(`Encontrada inscripción existente ID: ${existingData.id}. Actualizando estado a ${estadoPago}`);
+          
+          // Obtener todos los datos actuales de la inscripción existente
+          const { data: currentData, error: fetchError } = await supabaseAdmin
+            .from('inscripcions')
+            .select('*')
+            .eq('id', existingData.id)
+            .single();
+          
+          if (fetchError) {
+            console.error('Error al obtener datos completos de la inscripción:', fetchError);
+            return NextResponse.json({ error: `Error al obtener datos: ${fetchError.message}` }, { status: 500 });
+          }
+          
+          // Combinar los datos existentes con la información de pago
+          const updatedData = {
+            ...currentData,             // Mantener todos los datos existentes del formulario
+            ...dataToSave,              // Añadir datos nuevos que podrían venir del webhook (si existen)
+            estado: 'completada',       // Actualizar estado a completada
+            payment_info: {
+              reference: session.id,
+              method: 'stripe',
+              amount: importePagado, 
+              date: new Date().toISOString()
+            },
+            updated_at: new Date().toISOString()
+          };
+          
+          // Eliminar el ID para no causar problemas en el update
+          delete updatedData.id;
+          
+          console.log('Datos combinados para actualización:', updatedData);
+          
+          // Actualizar la inscripción existente con todos los datos
+          const { data: updateData, error: updateError } = await supabaseAdmin
+            .from('inscripcions')
+            .update(updatedData)
+            .eq('id', existingData.id)
+            .select();
+          
+          if (updateError) {
+            console.error('Error actualizando inscripción existente:', updateError);
+            return NextResponse.json({ error: `Error al actualizar inscripción: ${updateError.message}` }, { status: 500 });
+          }
+          
+          console.log('Inscripción actualizada correctamente:', updateData);
+          return NextResponse.json({ updated: true });
+        }
+      }
+      
+      // Si no se encontró una inscripción existente o no hay email, crear una nueva
+      console.log('No se encontró inscripción existente o no hay email. Creando nueva inscripción.');
       const { data, error } = await supabaseAdmin
-        .from('inscripciones') // Your Supabase table name
+        .from('inscripcions') // Nombre correcto de la tabla
         .insert([dataToSave])
         .select();
 
       if (error) {
-        console.error('Supabase error inserting inscription:', error);
-        // Consider retry logic or alerting for failed DB writes
-        return NextResponse.json({ error: `Supabase error: ${error.message}` }, { status: 500 });
+        console.error('Error creando nueva inscripción:', error);
+        return NextResponse.json({ error: `Error en Supabase: ${error.message}` }, { status: 500 });
       }
 
-      console.log('Inscription saved successfully to Supabase:', data);
+      console.log('Nueva inscripción guardada correctamente:', data);
 
     } catch (parseError: any) {
       console.error('Webhook Error: Failed to parse inscripcionData from metadata for session', session.id, parseError);

@@ -520,10 +520,20 @@ export default function InscripcionesPage() {
         return (
           <div className="flex items-center">
             {(estado === 'pendiente' || estado === '') && (
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 flex items-center border border-yellow-200">
-                <Clock className="h-4 w-4 mr-1" />
-                Pendent
-              </span>
+              <>
+              {/* Verificar si hay información de pago de Stripe */}
+              {item.payment_info && item.payment_info.method === 'stripe' ? (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 flex items-center border border-blue-200">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Pagat
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 flex items-center border border-yellow-200">
+                  <Clock className="h-4 w-4 mr-1" />
+                  Pendent
+                </span>
+              )}
+              </>
             )}
             {estado === 'completada' && (
               <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 flex items-center border border-green-200">

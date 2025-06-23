@@ -189,8 +189,15 @@ export default function DetalleInscripcionPage() {
       // Esto ahora es secundario - la UI ya se actualizó
       console.log(`Cambiando estado de inscripción ${inscripcionId} a ${estado}...`);
       
-      // Llamada al adaptador del servicio para actualizar en backend
-      const resultado = await actualizarEstadoInscripcion(inscripcionId, estado, inscripcion.processed || false);
+      // IMPORTANTE: Usamos useRpc=true para evitar problemas de RLS
+      const resultado = await actualizarEstadoInscripcion(
+        inscripcionId, 
+        estado, 
+        inscripcion.processed || false, 
+        undefined, 
+        true // useRpc = true para evitar restricciones RLS
+      );
+      
       // No usar console.log en producción
       if (process.env.NODE_ENV !== 'production') {
         console.log("Resultado de actualización:", resultado);

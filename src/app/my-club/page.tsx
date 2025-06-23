@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation"; // Para redirigir al dashboard
 import Link from "next/link";
 import { Lock, Mail, ArrowLeft, Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient"; // Importa el cliente de Supabase
 import Escudo from "@/assets/Escudo.png";
 import Loading from "../loading"; // Importar componente de loading

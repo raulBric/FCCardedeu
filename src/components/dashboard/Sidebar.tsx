@@ -116,8 +116,8 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }: SidebarP
     <aside 
       id="dashboard-sidebar"
       className={`
-        w-64 bg-red-700 text-white flex flex-col h-screen fixed z-30
-        transition-transform duration-300 ease-in-out
+        w-64 bg-red-700 text-white flex flex-col h-screen fixed left-0 top-0 z-40
+        transition-all duration-300 ease-in-out shadow-lg
         ${isOpen !== undefined ? (isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0') : 'md:translate-x-0'}
       `}
     >

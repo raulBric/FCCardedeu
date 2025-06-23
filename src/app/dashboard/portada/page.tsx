@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Plus, Upload, Trash2, Edit2, X, Save, Check, Image as ImageIcon, ChevronUp, ChevronDown, AlertCircle } from "lucide-react";
-import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button, Card, CardHeader, CardTitle, CardContent, DataTable } from "@/components/dashboard/FormComponents";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -220,8 +219,7 @@ export default function PortadaPage() {
   };
 
   return (
-    <DashboardLayout title={pageTitle} description={pageDescription}>
-      
+    <>
       <div className="flex justify-end mb-6">
         {!editingItem && (
           <Button
@@ -526,6 +524,6 @@ export default function PortadaPage() {
           )}
         </CardContent>
       </Card>
-    </DashboardLayout>
+    </>
   );
 }

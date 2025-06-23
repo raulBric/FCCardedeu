@@ -8,6 +8,9 @@ import { obtenerNoticias, Noticia } from "@/services/dashboardService";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { generarSlug } from "@/utils/slugUtils";
+import { NewsListingSEO } from "./page-seo";
+// La exportación de metadatos se hace desde page-seo.tsx
+export { metadata } from "./page-seo";
 
 export default function NoticiasPage() {
   const [noticias, setNoticias] = useState<Noticia[]>([]);
@@ -78,6 +81,8 @@ export default function NoticiasPage() {
   
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Componente SEO con datos estructurados Schema.org */}
+      <NewsListingSEO />
       <Header />
       <main className="flex-grow bg-gray-50 pt-24 pb-16">
         <div className="container mx-auto px-4">

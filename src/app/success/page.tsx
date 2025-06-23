@@ -27,10 +27,29 @@ export default function Success() {
     try {
       // 1. Verificar el estado del pago
       const response = await fetch(`/api/verify_payment?session_id=${session_id}`)
-      const data = await response.json()
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Error al verificar el pago')
+      
+      // Verificar si tenemos una respuesta válida
+      if (!response.ok) {
+        throw new Error(`Error en la respuesta del servidor: ${response.status} ${response.statusText}`)
+      }
+      
+      // Intentar parsear el JSON con manejo de errores
+      let data
+      try {
+        const textResponse = await response.text()
+        // Verificar que tenemos contenido antes de parsear
+        if (!textResponse || textResponse.trim() === '') {
+          throw new Error('La respuesta del servidor está vacía')
+        }
+        data = JSON.parse(textResponse)
+      } catch (parseError: any) {
+        console.error('Error al parsear la respuesta JSON:', parseError)
+        throw new Error(`Error al procesar la respuesta del servidor: ${parseError.message}`)
+      }
+      
+      // Verificar que la respuesta tiene el formato esperado
+      if (!data || !data.success) {
+        throw new Error(data?.error || 'Error al verificar el pago: respuesta mal formada')
       }
 
       setSessionData(data.session)
@@ -180,14 +199,7 @@ export default function Success() {
             Gràcies per la teva inscripció al FC Cardedeu. Hem enviat un correu de confirmació a{' '}
             <span className="font-semibold">{customerEmail}</span>.
           </p>
-          <div className="bg-gray-50 p-4 rounded-md border border-gray-200 w-full mb-6">
-            <p className="text-sm text-gray-700 mb-1">
-              <span className="font-semibold">ID d'inscripció:</span> {inscripcionId}
-            </p>
-            <p className="text-sm text-gray-700">
-              <span className="font-semibold">ID de pagament:</span> {sessionId?.substring(0, 16)}...
-            </p>
-          </div>
+          {/* Removed technical IDs as requested */}
           <p className="text-sm text-gray-600 mb-6">
             Si tens alguna pregunta, si us plau contacta amb el club a{' '}
             <a href="mailto:info@fccardedeu.cat" className="underline">info@fccardedeu.cat</a>.

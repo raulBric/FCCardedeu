@@ -3,19 +3,48 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js'; // Use admin client for webhooks
 
-// Initialize Supabase admin client (use environment variables)
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // IMPORTANT: Use service role key for backend operations
-);
+// Importar los tipos necesarios
+import { SupabaseClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-02-24.acacia',
-});
+// Inicializar Supabase admin client solo si las variables de entorno están disponibles
+let supabaseAdmin: SupabaseClient | null = null;
+if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY // IMPORTANT: Use service role key for backend operations
+  );
+}
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// Inicializar Stripe solo si la clave API está disponible
+let stripe: Stripe | null = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-02-24.acacia',
+  });
+}
+
+// Webhook secret para verificar firmas
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
 
 export async function POST(req: NextRequest) {
+  // Verificar que stripe esté inicializado
+  if (!stripe) {
+    console.error('Stripe no está configurado. Falta STRIPE_SECRET_KEY.');
+    return NextResponse.json(
+      { error: 'La pasarela de pago no está configurada correctamente.' },
+      { status: 500 }
+    );
+  }
+
+  // Verificar que supabaseAdmin esté inicializado
+  if (!supabaseAdmin) {
+    console.error('Supabase no está configurado. Faltan variables de entorno necesarias.');
+    return NextResponse.json(
+      { error: 'La base de datos no está configurada correctamente.' },
+      { status: 500 }
+    );
+  }
+
   const payload = await req.text();
   const sig = req.headers.get('stripe-signature');
 

@@ -39,7 +39,7 @@ export default function RootLayout({
       </head>
       <body className={exo2.className}>
         <main>{children}</main>
-        {/* <Footer /> */}
+        <Footer />
       </body>
     </html>
   );

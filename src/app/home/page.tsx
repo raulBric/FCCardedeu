@@ -29,7 +29,7 @@ export default function Home() {
       <Header />
       <HeroSection />
       <MatchResults/>
-      <AdBanner adUrl="https://example.com" imageUrlMobile={Damm} imageUrlDesktop={Damm} altText="Anunci publicitari" sponsorName="Patrocinador Oficial" />
+      {/* <AdBanner adUrl="https://example.com" imageUrlMobile={Damm} imageUrlDesktop={Damm} altText="Anunci publicitari" sponsorName="Patrocinador Oficial" /> */}
       <LatestNewsSection />
       <SponsorsSection />
     </>

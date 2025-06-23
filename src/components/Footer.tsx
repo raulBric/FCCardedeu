@@ -1,8 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Facebook,
-  Twitter,
   Instagram,
   Mail,
   Phone,
@@ -36,21 +34,21 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-gray-400 max-w-xs">
-              Empoderamos el fútbol local con pasión y compromiso desde 1934.
-              Únete a nuestra familia deportiva.
+              Empoderem el futbol local amb passió i compromís.
+              Uneix-te a la nostra família esportiva.
             </p>
           </div>
 
           {/* Enlaces rápidos */}
           <div className="flex flex-col items-center md:items-start">
-            <h3 className="text-white font-semibold mb-4">Enlaces Rápidos</h3>
+            <h3 className="text-white font-semibold mb-4">Enllaços Ràpids</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/resultados"
                   className="text-sm hover:text-blue-500 transition-colors"
                 >
-                  Resultados
+                  Resultats
                 </Link>
               </li>
               <li>
@@ -58,7 +56,7 @@ export default function Footer() {
                   href="/clasificacion"
                   className="text-sm hover:text-blue-500 transition-colors"
                 >
-                  Clasificación
+                  Classificació
                 </Link>
               </li>
               <li>
@@ -74,7 +72,7 @@ export default function Footer() {
                   href="/jugadores"
                   className="text-sm hover:text-blue-500 transition-colors"
                 >
-                  Jugadores
+                  Jugadors
                 </Link>
               </li>
               <li>
@@ -82,7 +80,7 @@ export default function Footer() {
                   href="/gestion-jugadores"
                   className="text-sm hover:text-blue-500 transition-colors"
                 >
-                  Gestión de Jugadores
+                  Gestió de Jugadors
                 </Link>
               </li>
             </ul>
@@ -90,7 +88,7 @@ export default function Footer() {
 
           {/* Contacto */}
           <div className="flex flex-col items-center md:items-start">
-            <h3 className="text-white font-semibold mb-4">Contacto</h3>
+            <h3 className="text-white font-semibold mb-4">Contacte</h3>
             <ul className="space-y-3">
               <li className="flex items-center justify-center md:justify-start text-sm">
                 <Mail className="w-4 h-4 mr-2 text-blue-500" />
@@ -104,10 +102,10 @@ export default function Footer() {
               <li className="flex items-center justify-center md:justify-start text-sm">
                 <Phone className="w-4 h-4 mr-2 text-blue-500" />
                 <a
-                  href="tel:+34900000000"
+                  href="tel:+34938713131"
                   className="hover:text-blue-500 transition-colors"
                 >
-                  +34 900 000 000
+                  +34 938 71 31 31
                 </a>
               </li>
               <li className="flex items-center justify-center md:justify-start text-sm">
@@ -126,23 +124,37 @@ export default function Footer() {
 
           {/* Redes sociales y MyClub */}
           <div className="flex flex-col items-center md:items-start">
-            <h3 className="text-white font-semibold mb-4">Síguenos</h3>
+            <h3 className="text-white font-semibold mb-4">Segueix-nos</h3>
             <div className="flex justify-center md:justify-start space-x-4">
               <a
-                href="#"
+                href="https://www.tiktok.com/@fccardedeu"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-blue-500 bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-colors"
+                aria-label="TikTok - FC Cardedeu"
               >
-                <Facebook className="w-5 h-5" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"></path>
+                </svg>
               </a>
               <a
-                href="#"
+                href="https://x.com/FCCardedeu"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-blue-500 bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-colors"
+                aria-label="X (Twitter) - FC Cardedeu"
               >
-                <Twitter className="w-5 h-5" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                  <path d="M4 4l11.733 16h4.267l-11.733 -16z"></path>
+                  <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"></path>
+                </svg>
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/fccardedeu/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-blue-500 bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-colors"
+                aria-label="Instagram - FC Cardedeu"
               >
                 <Instagram className="w-5 h-5" />
               </a>
@@ -150,13 +162,13 @@ export default function Footer() {
 
             {/* MyClub */}
             <div className="mt-6">
-              <h3 className="text-white font-semibold mb-2">Mi Club</h3>
+              <h3 className="text-white font-semibold mb-2">El Meu Club</h3>
               <Link
                 href="/my-club"
                 className="flex items-center space-x-2 text-blue-500 hover:text-white transition-colors"
               >
                 <User className="w-5 h-5" />
-                <span>Acceder a MyClub</span>
+                <span>Accedir a MyClub</span>
               </Link>
             </div>
           </div>
@@ -166,15 +178,14 @@ export default function Footer() {
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-center md:justify-between items-center text-center">
             <p className="text-sm text-gray-400">
-              © {new Date().getFullYear()} FC Cardedeu. Todos los derechos
-              reservados.
+              © 2025 FC Cardedeu. Tots els drets reservats.
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <Link
                 href="/privacidad"
                 className="text-sm text-gray-400 hover:text-blue-500 transition-colors"
               >
-                Política de Privacidad
+                Política de Privacitat
               </Link>
               <Link
                 href="/cookies"
@@ -186,7 +197,7 @@ export default function Footer() {
                 href="/legal"
                 className="text-sm text-gray-400 hover:text-blue-500 transition-colors"
               >
-                Aviso Legal
+                Avís Legal
               </Link>
             </div>
           </div>
@@ -194,7 +205,7 @@ export default function Footer() {
           {/* Créditos digital.io */}
           <div className="border-t border-gray-700 mt-6 pt-4 text-center">
             <p className="text-xs text-gray-500">
-              Impulsa tu presencia digital con <a href="https://dgital.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">dgital.io</a> | Expertos en transformación web
+              Impulsa la teva presència digital amb <a href="https://dgital.io" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">dgital.io</a> | Experts en transformació web
             </p>
           </div>
         </div>

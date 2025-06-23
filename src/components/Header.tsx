@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import Escudo from "@/assets/Escudo.png";
-import { SearchDialog } from "@/components/SearchDialog";
 
 // ---------------- Constants -----------------
 const SCROLL_THRESHOLD = 10;
@@ -39,8 +38,8 @@ const menuStructure: MenuStructureItem[] = [
     name: "Competició",
     type: "dropdown" as const,
     items: [
-      { name: "Resultats", path: "/resultats" },
-      { name: "Classificació", path: "/classificacio" },
+      // { name: "Resultats", path: "/resultats" },
+      // { name: "Classificació", path: "/classificacio" },
       { name: "Convocatòries", path: "/convocatories" },
     ],
   },
@@ -49,8 +48,7 @@ const menuStructure: MenuStructureItem[] = [
     name: "Club",
     type: "dropdown" as const,
     items: [
-      { name: "Comunitat", path: "/comunitat" },
-      { name: "Junta Directiva", path: "/junta-directiva" },
+        { name: "Junta Directiva", path: "/junta-directiva" },
     ],
   },
   {
@@ -58,7 +56,7 @@ const menuStructure: MenuStructureItem[] = [
     type: "dropdown" as const,
     items: [
       { name: "Inscripció", path: "/inscripcio" },
-      { name: "Pagaments", path: "/pagaments" },
+      
     ],
   },
 ];
@@ -78,7 +76,6 @@ export default function Header() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
   // Controlador de scroll optimizado
@@ -122,7 +119,6 @@ export default function Header() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
     if (e.key === "Escape") {
       setIsMenuOpen(false);
-      setSearchOpen(false);
     }
   };
 
@@ -197,7 +193,7 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {/* Search Button */}
+          {/* Instagram Link */}
           <Link
             href="https://www.instagram.com/fccardedeu/?hl=es"
             target="_blank"
@@ -207,9 +203,6 @@ export default function Header() {
           >
             <Instagram className="h-6 w-6" />
           </Link>
-          
-          {/* Search Dialog */}
-          <SearchDialog />
 
           {/* Mobile Menu Button */}
           <button
@@ -227,29 +220,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Search Bar */}
-      <AnimatePresence>
-        {searchOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="border-t border-white/10 overflow-hidden"
-          >
-            <div className="container py-4 px-4">
-              {/* <div className="relative max-w-md mx-auto">
-                <Input
-                  type="search"
-                  placeholder="Cerca al web..."
-                  className="pr-10 bg-red-700/50 border-white/20 text-white placeholder:text-white/60 focus-visible:ring-white/30"
-                  autoFocus={typeof window !== "undefined" && window.innerWidth >= 768}
-                />
-                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-              </div> */}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Search Bar removed */}
 
       {/* Mobile Menu */}
       <AnimatePresence mode="wait">

@@ -5,7 +5,7 @@ interface OrganizationSchemaProps {
   logo?: string;
 }
 
-export default function OrganizationSchema({ url = 'https://www.fccardedeu.org', logo = '/images/logo.png' }: OrganizationSchemaProps) {
+export default function OrganizationSchema({ url = 'https://www.fccardedeu.org', logo = '/Escudo.webp' }: OrganizationSchemaProps) {
   const schemaData = {
     "@context": "https://schema.org",
     "@type": "SportsOrganization",
@@ -20,7 +20,7 @@ export default function OrganizationSchema({ url = 'https://www.fccardedeu.org',
       "postalCode": "08440",
       "addressCountry": "ES"
     },
-    "telephone": "+34 93 846 42 26",
+    "telephone": "+34 938 71 31 31",
     "email": "info@fccardedeu.org",
     "sameAs": [
       "https://www.facebook.com/fccardedeu",

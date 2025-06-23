@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /admin/
+
+# Allow necessary resources
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.webp$
+
+# Sitemap
+Sitemap: https://www.fccardedeu.org/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10

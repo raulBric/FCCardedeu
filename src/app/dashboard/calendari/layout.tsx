@@ -4,6 +4,8 @@ export default function CalendariLayout({
   children: React.ReactNode
 }) {
   return (
-    <>{children}</>
+    <div className="w-full">
+      {children}
+    </div>
   )
 }

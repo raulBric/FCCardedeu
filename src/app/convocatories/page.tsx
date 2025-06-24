@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Home, Plane } from "lucide-react";
 import Header from "@/components/Header";
+import { supabase } from "@/services/supabaseService";
 
 interface Convocatoria {
   id: number;
@@ -15,6 +16,10 @@ interface Convocatoria {
   callTime: string;
   location: string;
   locationLink: string;
+  title?: string;
+  meetingPoint?: string;
+  notes?: string;
+  status?: string;
 }
 
 const teams: string[] = [
@@ -31,12 +36,7 @@ const teams: string[] = [
   "Benjamí B",
 ];
 
-const convocatorias: Convocatoria[] = [
-  { id: 1, team: "Primer Equip", opponent: "FC Barcelona", date: "2025-01-24", matchTime: "18:00", callTime: "16:30", location: "Camp Municipal Cardedeu",locationLink: "https://maps.app.goo.gl/DtqpXQyKRvjzPj4E8" },
-  { id: 2, team: "Juvenil A", opponent: "Espanyol", date: "2025-01-26", matchTime: "16:00", callTime: "14:30", location: "Camp de l'Espanyol",locationLink: "https://maps.app.goo.gl/DtqpXQyKRvjzPj4E8" },
-  { id: 3, team: "Cadet A", opponent: "Girona FC", date: "2025-01-27", matchTime: "15:00", callTime: "13:30", location: "Camp Municipal Girona",locationLink: "https://maps.app.goo.gl/DtqpXQyKRvjzPj4E8" },
-  { id: 4, team: "Aleví B", opponent: "Sabadell FC", date: "2025-01-28", matchTime: "10:30", callTime: "09:00", location: "Camp Sabadell",locationLink: "https://maps.app.goo.gl/DtqpXQyKRvjzPj4E8" },
-];
+// Los datos ahora vendrán de Supabase
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -45,6 +45,66 @@ const formatDate = (dateString: string): string => {
 
 export default function ConvocatoriasPage() {
   const [selectedTeam, setSelectedTeam] = useState<string>("");
+  const [convocatorias, setConvocatorias] = useState<Convocatoria[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    const fetchConvocatorias = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Ahora podemos acceder directamente a la tabla convocatorias
+        // gracias a la política RLS modificada
+        const { data, error } = await supabase
+          .from('convocatorias')
+          .select('*')
+          .order('fecha', { ascending: true });
+        
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          procesarDatos(data);
+        } else {
+          setConvocatorias([]);
+        }
+      
+        
+      } catch (err: any) {
+        console.error("Error al cargar convocatorias:", err);
+        setError(`No se pudieron cargar las convocatorias: ${err.message || 'Error desconocido'}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    // Función para procesar los datos una vez obtenidos
+    const procesarDatos = (data: any[]) => {
+      // Mapear los datos de la BD al formato de nuestra interfaz
+      const formattedData: Convocatoria[] = data.map((item: any) => {
+        console.log('Procesando item:', item);
+        return {
+          id: item.id,
+          team: item.equipo || '',
+          opponent: item.rival || '',
+          date: item.fecha || '',
+          matchTime: item.hora || '',
+          callTime: item.horaencuentro || '',
+          location: item.lugar || '',
+          locationLink: 'https://maps.app.goo.gl/DtqpXQyKRvjzPj4E8',  // Usamos URL por defecto ya que no hay campo para mapear
+          title: item.titulo || '',
+          meetingPoint: item.puntoencuentro || '',
+          notes: item.notas || '',
+          status: item.estado || ''
+        };
+      });
+      
+      console.log('Datos formateados:', formattedData);
+      setConvocatorias(formattedData);
+    };
+
+    fetchConvocatorias();
+  }, []); 
 
   const filteredConvocatorias = selectedTeam
     ? convocatorias.filter((convocatoria) => convocatoria.team === selectedTeam)
@@ -108,7 +168,15 @@ export default function ConvocatoriasPage() {
         </select>
       </div>
 
-      {filteredConvocatorias.length > 0 ? (
+
+      {isLoading ? (
+        <div className="text-center p-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-red-600 border-t-transparent"></div>
+          <p className="mt-2 text-gray-600">Cargando convocatorias...</p>
+        </div>
+      ) : error ? (
+        <p className="text-red-500 text-center">{error}</p>
+      ) : filteredConvocatorias.length > 0 ? (
         <ul className="space-y-4">
           {filteredConvocatorias.map((convocatoria) => (
             <li key={convocatoria.id} className="p-4 border rounded-lg shadow-md bg-gray-50 flex flex-col gap-2">
@@ -124,6 +192,15 @@ export default function ConvocatoriasPage() {
               <p className="text-gray-700">📍 <Link href={convocatoria.locationLink} target="_blank" className="text-blue-600 hover:underline">{convocatoria.location}</Link></p>
               <p className="text-gray-700">🕒 Hora de convocatòria: {convocatoria.callTime}</p>
               <p className="text-gray-700">⏳ Hora de partit: {convocatoria.matchTime}</p>
+              {convocatoria.meetingPoint && (
+                <p className="text-gray-700">📍 Punt de trobada: {convocatoria.meetingPoint}</p>
+              )}
+              {convocatoria.notes && (
+                <div className="mt-2 p-2 bg-gray-100 rounded-md">
+                  <p className="text-gray-700 text-sm font-medium">Notes:</p>
+                  <p className="text-gray-600 text-sm">{convocatoria.notes}</p>
+                </div>
+              )}
             </li>
           ))}
         </ul>

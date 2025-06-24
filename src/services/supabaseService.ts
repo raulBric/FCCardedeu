@@ -33,13 +33,34 @@ export const getLatestResults = async (limit = 5) => {
 
 // Funciones para convocatorias
 export const getConvocatories = async () => {
-  const { data, error } = await supabase
-    .from('convocatorias')
-    .select('*')
-    .order('fecha', { ascending: true });
-  
-  if (error) throw error;
-  return data;
+  console.log('Llamando a getConvocatories');
+  try {
+    // Verificar explícitamente que el cliente supabase esté disponible
+    if (!supabase) {
+      console.error('Cliente Supabase no inicializado');
+      throw new Error('Cliente Supabase no inicializado');
+    }
+    
+    // Consulta con más información de depuración
+    console.log('Ejecutando consulta a Supabase tabla:convocatorias');
+    const { data, error } = await supabase
+      .from('convocatorias')
+      .select('*')
+      .order('fecha', { ascending: true });
+    
+    if (error) {
+      console.error('Error en consulta Supabase:', error);
+      throw error;
+    }
+    
+    console.log('Datos recuperados de convocatorias:', data?.length || 0, 'registros');
+    
+    // Si no hay datos, devolver array vacío explícitamente
+    return data || [];
+  } catch (error) {
+    console.error('Error en getConvocatories:', error);
+    throw error;
+  }
 };
 
 // Funciones para pagos

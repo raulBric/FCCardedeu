@@ -143,8 +143,7 @@ export default function NuevaConvocatoriaPage() {
   };
 
   return (
-    <div className="w-full ml-0 md:ml-64 lg:ml-64 md:pr-4 lg:pr-6">
-      <div className="px-2 py-4 w-full max-w-full overflow-x-auto">
+      <div className="max-w-[1200px] mx-auto">
         <div className="mb-6">
           <Link href="/dashboard/calendari" className="flex items-center text-blue-600 hover:text-blue-800">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -152,12 +151,12 @@ export default function NuevaConvocatoriaPage() {
           </Link>
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Nova Convocatòria</CardTitle>
+        <Card className="w-full shadow-sm overflow-hidden bg-white">
+          <CardHeader className="border-b border-gray-100">
+            <CardTitle className="text-xl md:text-2xl font-bold text-gray-800">Nova Convocatòria</CardTitle>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+          <CardContent className="p-4 md:p-6">
+            <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
               <InputField
                 label="Títol"
                 name="titulo"
@@ -167,7 +166,7 @@ export default function NuevaConvocatoriaPage() {
                 required
               />
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <div className="relative">
                   <div className="absolute left-3 top-9 text-gray-400">
                     <Calendar className="h-5 w-5" />
@@ -279,13 +278,22 @@ export default function NuevaConvocatoriaPage() {
                 placeholder="Detalls addicionals de la convocatòria..."
               />
 
-              <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-4 mt-8 pt-4 border-t border-gray-100">
                 <Link href="/dashboard/calendari" className="w-full sm:w-auto">
-                  <Button type="button" variant="outline" className="w-full sm:w-auto">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="w-full sm:w-auto shadow-sm hover:bg-gray-50"
+                  >
                     Cancel·lar
                   </Button>
                 </Link>
-                <Button type="submit" variant="primary" disabled={submitting} className="w-full sm:w-auto">
+                <Button 
+                  type="submit" 
+                  variant="primary" 
+                  disabled={submitting} 
+                  className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white"
+                >
                   {submitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -300,6 +308,5 @@ export default function NuevaConvocatoriaPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
   );
 }

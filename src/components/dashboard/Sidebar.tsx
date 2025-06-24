@@ -62,7 +62,7 @@ const navItems = [
     href: "/dashboard/patrocinadors" 
   },
   { 
-    label: "Calendari", 
+    label: "Convocatòria", 
     icon: Calendar, 
     href: "/dashboard/calendari" 
   },

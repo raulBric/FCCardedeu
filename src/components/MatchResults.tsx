@@ -1,21 +1,50 @@
 "use client"
 
-import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, useInView } from "framer-motion"
+import { Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import CardedeuLogo from "@/assets/Escudo.png"
 import PlaceholderLogo from "@/assets/blindaje.webp"
 import Adidas from "@/assets/Patrocinadores/Adidas.png"
 import FutbolEmotion from "@/assets/Patrocinadores/FutbolEmotion.svg"
 import Damm from "@/assets/Patrocinadores/damm.png"
 
-const matchResults = [
+// Tipos para los partidos
+interface Sponsor {
+  name: string
+  logo: any // StaticImageData | string
+  url: string
+}
+
+interface Match {
+  id: number
+  date: string
+  time?: string
+  location?: string
+  category?: string
+  competition?: string
+  status: 'finalizado' | 'próximo' | 'en_curso'
+  homeTeam: string
+  awayTeam: string
+  homeScore?: number
+  awayScore?: number
+  homeLogo: any
+  awayLogo: any
+  sponsor: Sponsor
+}
+
+// Datos de partidos
+const matchResults: Match[] = [
   {
     id: 1,
     date: "10 Marzo 2025",
+    time: "17:00",
+    location: "Camp Municipal d'Esports",
+    category: "Primera Catalana",
+    competition: "Liga Regular",
+    status: "finalizado",
     homeTeam: "FC Cardedeu",
     awayTeam: "CF Granollers",
     homeScore: 3,
@@ -27,6 +56,11 @@ const matchResults = [
   {
     id: 2,
     date: "17 Marzo 2025",
+    time: "18:30",
+    location: "Camp Municipal d'Esports",
+    category: "Primera Catalana",
+    competition: "Liga Regular",
+    status: "finalizado",
     homeTeam: "FC Cardedeu",
     awayTeam: "Unió Esportiva Vic",
     homeScore: 2,
@@ -38,6 +72,11 @@ const matchResults = [
   {
     id: 3,
     date: "24 Marzo 2025",
+    time: "12:00",
+    location: "Camp Municipal d'Esports",
+    category: "Primera Catalana",
+    competition: "Liga Regular",
+    status: "finalizado",
     homeTeam: "FC Cardedeu",
     awayTeam: "FC La Torreta",
     homeScore: 1,
@@ -46,270 +85,301 @@ const matchResults = [
     awayLogo: PlaceholderLogo,
     sponsor: { name: "Coca-Cola", logo: Damm, url: "https://www.cocacola.es" },
   },
+  {
+    id: 4,
+    date: "31 Marzo 2025",
+    time: "16:00",
+    location: "Camp Municipal d'Esports",
+    category: "Primera Catalana",
+    competition: "Copa Catalunya",
+    status: "próximo",
+    homeTeam: "FC Cardedeu",
+    awayTeam: "UE Sant Celoni",
+    homeLogo: CardedeuLogo,
+    awayLogo: PlaceholderLogo,
+    sponsor: { name: "Damm", logo: Damm, url: "https://www.damm.com" },
+  },
 ]
 
-export default function MatchResultsSection() {
-  const [activeTab, setActiveTab] = useState<'recientes' | 'próximos'>('recientes')
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const sectionRef = useRef<HTMLElement>(null)
-  const sliderRef = useRef<HTMLDivElement>(null)
-  const isInView = useInView(sectionRef, { once: true, amount: 0.2 })
+// Componente para la tarjeta de partido
+function MatchCard({ match }: { match: Match }) {
+  const { date, time, competition, status, homeTeam, awayTeam, homeScore, awayScore, homeLogo, awayLogo, sponsor, location } = match
+  const isFinished = status === 'finalizado'
 
-  // Control para el slider de partidos
-  const handleNextSlide = () => {
-    setCurrentIndex((prev) => Math.min(prev + 1, matchResults.length - 1))
-  }
-
-  const handlePrevSlide = () => {
-    setCurrentIndex((prev) => Math.max(prev - 1, 0))
-  }
-
-  // Efectos de animación y visibilidad de slides para móvil
-  useEffect(() => {
-    if (sliderRef.current && window.innerWidth < 768) { // Solo para móvil
-      const slideWidth = sliderRef.current.querySelector('.mobile-slide')?.clientWidth || 0;
-      const gap = 24; // 6 rem
-      const scrollAmount = currentIndex * (slideWidth + gap);
+  return (
+    <div className="flex flex-col bg-white rounded-md overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100 h-full">
+      {/* Header con liga y jornada */}
+      <div className="bg-gray-100 px-4 py-3 text-xs text-center text-gray-700 font-medium border-b border-gray-200">
+        {competition && competition.toUpperCase()}
+        {competition && " · "}
+        {location && location}
+      </div>
       
-      sliderRef.current.scrollTo({
-        left: scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  }, [currentIndex])
-
-  // Indicador de posición actual
-  const renderIndicators = () => (
-    <div className="flex items-center justify-center mt-6 gap-2">
-      {matchResults.map((_, idx) => (
-        <button
-          key={idx}
-          onClick={() => setCurrentIndex(idx)}
-          className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-            idx === currentIndex ? 'bg-red-600 w-6' : 'bg-gray-300 hover:bg-gray-400'
-          }`}
-          aria-label={`Ir al partido ${idx + 1}`}
-        />
-      ))}
+      {/* Fecha/Entrenador */}
+      <div className="text-center text-xs py-2 text-gray-500">
+        {date}
+      </div>
+      
+      {/* Equipos y resultado */}
+      <div className="flex items-center justify-between px-4 py-5 flex-1">
+        {/* Equipo local */}
+        <div className="flex flex-col items-center w-2/5">
+          <div className="h-16 w-16 relative mb-2">
+            <Image 
+              src={homeLogo} 
+              alt={homeTeam}
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="text-sm text-center font-medium">{homeTeam}</div>
+        </div>
+        
+        {/* Resultado */}
+        <div className="flex items-center justify-center w-1/5">
+          {isFinished ? (
+            <div className="flex gap-1 items-center">
+              <span className="font-bold text-2xl">{homeScore}</span>
+              <span className="text-gray-400 mx-1">-</span>
+              <span className="font-bold text-2xl">{awayScore}</span>
+            </div>
+          ) : (
+            <div className="text-sm font-semibold text-gray-500">{time}h</div>
+          )}
+        </div>
+        
+        {/* Equipo visitante */}
+        <div className="flex flex-col items-center w-2/5">
+          <div className="h-16 w-16 relative mb-2">
+            <Image 
+              src={awayLogo} 
+              alt={awayTeam}
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="text-sm text-center font-medium">{awayTeam}</div>
+        </div>
+      </div>
+      
+      {/* Patrocinador */}
+      <div className="bg-gray-100 px-2 py-2 flex items-center justify-center border-t border-gray-200">
+        <span className="text-[10px] text-gray-600 mr-1 font-medium">Patrocinado por</span>
+        <div className="h-5 w-16 relative">
+          <Image 
+            src={sponsor.logo} 
+            alt={sponsor.name}
+            fill
+            className="object-contain"
+          />
+        </div>
+      </div>
     </div>
+  )
+}
+
+// Componente principal
+export default function MatchResultsSection() {
+  const [activeTab, setActiveTab] = useState<'finalizado' | 'próximo'>('finalizado')
+  const [startIndex, setStartIndex] = useState(0)
+  const sectionRef = useRef<HTMLElement>(null)
+  const isInView = useInView(sectionRef, { once: true })
+  
+  // Filtrar partidos por estado
+  const filteredMatches = matchResults.filter(match => match.status === activeTab)
+  
+  // Control de slides
+  const maxSlidesVisible = 3
+  const totalSlides = filteredMatches.length
+  
+  // Navegar entre grupos de 3 tarjetas
+  const nextSlide = () => {
+    setStartIndex(prev => Math.min(prev + maxSlidesVisible, totalSlides - maxSlidesVisible))
+  }
+  
+  const prevSlide = () => {
+    setStartIndex(prev => Math.max(prev - maxSlidesVisible, 0))
+  }
+  
+  // Reset al cambiar de tab
+  useEffect(() => {
+    setStartIndex(0)
+  }, [activeTab])
+  
+  // Visibles actualmente
+  const visibleMatches = filteredMatches.slice(
+    startIndex,
+    Math.min(startIndex + maxSlidesVisible, totalSlides)
   )
 
   return (
-    <section
-      ref={sectionRef}
-      className="py-12 md:py-20 relative bg-gradient-to-b from-white to-gray-50"
+    <section 
+      ref={sectionRef} 
+      className="py-10 bg-gray-50"
     >
-      {/* Adorno de fondo */}
-      <div className="absolute top-0 inset-x-0 h-24 bg-red-700 opacity-5 rounded-b-[100%] transform -translate-y-1/2"></div>
-      
       <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          {/* Header con título y selector de tabs */}
-          <div className="flex flex-col md:flex-row items-center justify-between mb-8 md:mb-12">
-            <motion.h2
-              initial={{ x: -40, opacity: 0 }}
-              animate={isInView ? { x: 0, opacity: 1 } : { x: -40, opacity: 0 }}
-              transition={{ duration: 0.5, type: 'spring', stiffness: 100 }}
-              className="text-3xl md:text-4xl font-extrabold text-gray-800 relative inline-block mb-4 md:mb-0"
-            >
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-700 to-red-600">
-                Resultados y Partidos
-              </span>
-              <div className="absolute -bottom-1 left-0 w-12 h-1 bg-red-600 rounded-full"></div>
-            </motion.h2>
-            
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={isInView ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="bg-gray-100 p-1 rounded-full flex shadow-sm">
-              <button
-                onClick={() => setActiveTab('recientes')}
-                className={`text-sm md:text-base font-medium py-1.5 md:py-2 px-4 md:px-6 rounded-full transition-all ${activeTab === 'recientes' 
-                  ? 'bg-white text-red-700 shadow-sm' 
-                  : 'text-gray-700 hover:bg-gray-200'}`}
-              >
-                Últimos partidos
-              </button>
-              <button
-                onClick={() => setActiveTab('próximos')}
-                className={`text-sm md:text-base font-medium py-1.5 md:py-2 px-4 md:px-6 rounded-full transition-all ${activeTab === 'próximos' 
-                  ? 'bg-white text-red-700 shadow-sm' 
-                  : 'text-gray-700 hover:bg-gray-200'}`}
-              >
-                Próximos partidos
-              </button>
-            </motion.div>
-          </div>
-          
-          {/* Vista móvil con carrusel */}
-          <div className="md:hidden">
-            <motion.div
-              initial={{ y: 40, opacity: 0 }}
-              animate={isInView ? { y: 0, opacity: 1 } : { y: 40, opacity: 0 }}
-              transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
-              className="relative"
-            >
-              <div className="overflow-hidden">
-                <div 
-                  ref={sliderRef}
-                  className="flex gap-6 transition-all pb-2 overflow-x-auto scrollbar-hide"
-                  style={{ scrollSnapType: "x mandatory" }}
-                >
-                  {matchResults.map((match) => (
-                    <div 
-                      key={match.id}
-                      className="mobile-slide w-[85%] flex-shrink-0"
-                      style={{ scrollSnapAlign: 'center' }}
-                    >
-                      <MatchCard match={match} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          
-            {/* Controles de navegación e indicadores para móvil */}
-            <div className="mt-6">
-              <div className="flex justify-center items-center gap-4">
-                <button
-                  onClick={handlePrevSlide}
-                  disabled={currentIndex === 0}
-                  className={`bg-white p-2 rounded-full shadow-md flex items-center justify-center transition-all ${currentIndex === 0 ? 'opacity-50 text-gray-400' : 'text-red-700 hover:bg-red-50'}`}
-                  aria-label="Partido anterior"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-
-                {renderIndicators()}
-
-                <button
-                  onClick={handleNextSlide}
-                  disabled={currentIndex >= matchResults.length - 1}
-                  className={`bg-white p-2 rounded-full shadow-md flex items-center justify-center transition-all ${currentIndex >= matchResults.length - 1 ? 'opacity-50 text-gray-400' : 'text-red-700 hover:bg-red-50'}`}
-                  aria-label="Siguiente partido"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Vista desktop con grid estático */}
-          <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={isInView ? { y: 0, opacity: 1 } : { y: 40, opacity: 0 }}
-            transition={{ duration: 0.5, delay: 0.3, type: 'spring' }}
-            className="hidden md:block"
+        {/* Título y tabs */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+          <motion.h2 
+            initial={{ opacity: 0, y: -10 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            className="text-2xl font-bold mb-4 md:mb-0"
           >
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
-              {matchResults.map((match) => (
-                <div key={match.id} className="transform transition-all duration-300 hover:-translate-y-1">
+            Resultados y partidos
+          </motion.h2>
+          
+          <div className="flex gap-4">
+            <button 
+              onClick={() => setActiveTab('finalizado')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'finalizado' 
+                  ? 'bg-red-600 text-white' 
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              Últimos resultados
+            </button>
+            <button 
+              onClick={() => setActiveTab('próximo')}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'próximo' 
+                  ? 'bg-red-600 text-white' 
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              Próximos partidos
+            </button>
+          </div>
+        </div>
+        
+        {/* Carrusel */}
+        <div className="relative">
+          {/* Botones de navegación */}
+          {totalSlides > maxSlidesVisible && (
+            <>
+              <button 
+                onClick={prevSlide} 
+                disabled={startIndex === 0}
+                className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-white shadow-md ${
+                  startIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                aria-label="Ver partidos anteriores"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              
+              <button 
+                onClick={nextSlide} 
+                disabled={startIndex + maxSlidesVisible >= totalSlides}
+                className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-white shadow-md ${
+                  startIndex + maxSlidesVisible >= totalSlides ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-gray-100'
+                }`}
+                aria-label="Ver más partidos"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </>
+          )}
+        
+          {/* Tarjetas de partidos */}
+          <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 gap-5">
+            {visibleMatches.length > 0 ? (
+              visibleMatches.map(match => (
+                <motion.div 
+                  key={match.id} 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.3 }}
+                >
                   <MatchCard match={match} />
+                </motion.div>
+              ))
+            ) : (
+              <div className="col-span-1 sm:col-span-2 md:col-span-3 p-8 bg-white rounded-md text-center text-gray-500">
+                No hay partidos {activeTab === 'finalizado' ? 'finalizados' : 'programados'} disponibles
+              </div>
+            )}
+          </div>
+          
+          {/* Carrusel para móvil - solo visible en pantallas pequeñas */}
+          <div className="block sm:hidden relative overflow-hidden px-2">
+            {filteredMatches.length > 0 ? (
+              <div>
+                <motion.div
+                  key={`mobile-${activeTab}-${startIndex}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="w-full"
+                >
+                  <MatchCard match={filteredMatches[startIndex]} />
+                </motion.div>
+                
+                {/* Controles para móvil */}
+                <div className="flex justify-between mt-4">
+                  <button
+                    onClick={() => setStartIndex(prev => Math.max(prev - 1, 0))}
+                    disabled={startIndex === 0}
+                    className={`p-2 rounded-full ${startIndex === 0 ? 'text-gray-300 bg-gray-100' : 'text-gray-700 bg-white shadow-md'}`}
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalSlides }).map((_, idx) => (
+                      <button
+                        key={`dot-${idx}`}
+                        onClick={() => setStartIndex(idx)}
+                        className={`h-2 rounded-full transition-all ${startIndex === idx ? 'w-6 bg-red-600' : 'w-2 bg-gray-300'}`}
+                        aria-label={`Ver partido ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={() => setStartIndex(prev => Math.min(prev + 1, totalSlides - 1))}
+                    disabled={startIndex === totalSlides - 1}
+                    className={`p-2 rounded-full ${startIndex === totalSlides - 1 ? 'text-gray-300 bg-gray-100' : 'text-gray-700 bg-white shadow-md'}`}
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
                 </div>
+              </div>
+            ) : (
+              <div className="p-8 bg-white rounded-md text-center text-gray-500">
+                No hay partidos {activeTab === 'finalizado' ? 'finalizados' : 'programados'} disponibles
+              </div>
+            )}
+          </div>
+          
+          {/* Indicadores de posición si hay más de un grupo de tarjetas (versión desktop) */}
+          {totalSlides > maxSlidesVisible && (
+            <div className="hidden sm:flex justify-center mt-6 gap-2">
+              {Array.from({ length: Math.ceil(totalSlides / maxSlidesVisible) }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setStartIndex(idx * maxSlidesVisible)}
+                  className={`h-2 rounded-full transition-all ${
+                    idx === Math.floor(startIndex / maxSlidesVisible) 
+                      ? 'w-6 bg-red-600' 
+                      : 'w-2 bg-gray-300'
+                  }`}
+                  aria-label={`Ver grupo de partidos ${idx + 1}`}
+                />
               ))}
             </div>
-          </motion.div>
-          
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.4, delay: 0.7 }}
-            className="mt-10 text-center"
+          )}
+        </div>
+        
+        {/* Ver todos */}
+        <div className="text-center mt-8">
+          <Link 
+            href="/partidos" 
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700"
           >
-            <Link href="/partidos" className="inline-flex items-center gap-1 py-2.5 px-5 bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium transition-all transform hover:-translate-y-0.5 hover:shadow-md">
-              Ver todos los partidos
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </motion.div>
+            Ver todos los partidos
+          </Link>
         </div>
       </div>
     </section>
   )
 }
-
-// Componente de tarjeta único para ambas vistas
-function MatchCard({ match }: { match: (typeof matchResults)[0] }) {
-  return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl overflow-hidden shadow-lg border border-red-100 h-full transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-      {/* Header con la fecha */}
-      <div className="bg-gradient-to-r from-red-700 to-red-800 text-white py-2 px-4">
-        <div className="flex justify-between items-center">
-          <p className="text-sm font-medium">{match.date}</p>
-          <span className="text-xs px-2 py-1 bg-white/20 rounded-full">Finalizado</span>
-        </div>
-      </div>
-      
-      {/* Contenido principal */}
-      <div className="p-4">
-        <div className="grid grid-cols-11 items-center gap-2">
-          {/* Equipo local */}
-          <div className="col-span-4 flex flex-col items-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white p-2 shadow-inner flex items-center justify-center mb-2">
-              <img
-                src={typeof match.homeLogo === 'string' ? match.homeLogo : match.homeLogo?.src || "/placeholder.svg"}
-                alt={match.homeTeam}
-                className="w-full h-full object-contain"
-                loading="lazy"
-              />
-            </div>
-            <h3 className="text-gray-800 text-sm md:text-base font-bold text-center leading-tight">
-              {match.homeTeam}
-            </h3>
-          </div>
-
-          {/* Marcador */}
-          <div className="col-span-3 py-3">
-            <div className="flex items-center justify-center bg-white rounded-lg shadow-md px-2 py-3">
-              <span className={`text-2xl md:text-3xl font-black ${match.homeScore > match.awayScore ? 'text-red-600' : 'text-gray-700'}`}>
-                {match.homeScore}
-              </span>
-              <span className="text-gray-400 mx-2 text-xl font-light">-</span>
-              <span className={`text-2xl md:text-3xl font-black ${match.awayScore > match.homeScore ? 'text-red-600' : 'text-gray-700'}`}>
-                {match.awayScore}
-              </span>
-            </div>
-          </div>
-
-          {/* Equipo visitante */}
-          <div className="col-span-4 flex flex-col items-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white p-2 shadow-inner flex items-center justify-center mb-2">
-              <img
-                src={typeof match.awayLogo === 'string' ? match.awayLogo : match.awayLogo?.src || "/placeholder.svg"}
-                alt={match.awayTeam}
-                className="w-full h-full object-contain"
-                loading="lazy"
-              />
-            </div>
-            <h3 className="text-gray-800 text-sm md:text-base font-bold text-center leading-tight">
-              {match.awayTeam}
-            </h3>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer con patrocinador */}
-      <div className="mt-auto border-t border-gray-100 bg-gray-50 p-3">
-        <div className="flex items-center justify-center">
-          <span className="text-xs text-gray-500 mr-2">Patrocinado por:</span>
-          <Link 
-            href={match.sponsor.url} 
-            target="_blank" 
-            className="flex items-center hover:opacity-80 transition-opacity"
-          >
-            <img
-              src={typeof match.sponsor.logo === 'string' ? match.sponsor.logo : match.sponsor.logo?.src || "/placeholder.svg"}
-              alt={match.sponsor.name}
-              className="h-10 w-auto object-contain"
-              loading="lazy"
-            />
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-

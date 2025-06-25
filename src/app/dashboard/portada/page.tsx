@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Plus, Upload, Trash2, Edit2, X, Save, Check, Image as ImageIcon, ChevronUp, ChevronDown, AlertCircle } from "lucide-react";
 import { Button, Card, CardHeader, CardTitle, CardContent, DataTable } from "@/components/dashboard/FormComponents";
 import { supabase } from "@/lib/supabaseClient";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 
 // Tipo para los elementos de la portada
 interface HeroItem {
@@ -16,6 +17,8 @@ interface HeroItem {
   order: number;
   active: boolean;
 }
+
+
 
 export default function PortadaPage() {
   // Estado para los elementos de la portada
@@ -219,8 +222,9 @@ export default function PortadaPage() {
   };
 
   return (
-    <>
-      <div className="flex justify-end mb-6">
+    <DashboardLayout title="Gestió de portada" description="Gestiona els elements que apareixen a la portada principal del lloc web">
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between mb-4 sm:mb-6">  
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-0">Elementos de la portada principal</h2>
         {!editingItem && (
           <Button
             variant="primary" 
@@ -234,13 +238,13 @@ export default function PortadaPage() {
       
       {/* Formulario de edición */}
       {editingItem && (
-        <Card className="mb-8">
+        <Card className="mb-6 md:mb-8 w-full overflow-hidden">
           <CardHeader>
             <CardTitle>Editar elemento</CardTitle>
           </CardHeader>
           <CardContent>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             <div>
               <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">
@@ -341,13 +345,13 @@ export default function PortadaPage() {
       
       {/* Formulario para nuevo elemento */}
       {showForm && !editingItem && (
-        <Card className="mb-8">
+        <Card className="mb-6 md:mb-8 w-full overflow-hidden">
           <CardHeader>
             <CardTitle>Nuevo elemento de portada</CardTitle>
           </CardHeader>
           <CardContent>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             <div>
               <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">
@@ -447,22 +451,22 @@ export default function PortadaPage() {
       )}
       
       {/* Lista de elementos existentes */}
-      <Card>
+      <Card className="w-full overflow-hidden">
         <CardHeader>
           <CardTitle>Elementos de portada</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-0 sm:px-3 md:px-6 overflow-x-auto">
           {heroItems.length === 0 ? (
             <div className="text-center py-8">
               <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
               <p className="text-gray-500">No hay elementos en la portada. Añade uno nuevo para comenzar.</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y divide-gray-200">
               {heroItems.map((item) => (
-                <div key={item.id} className="p-4 hover:bg-gray-50 transition">
+                <div key={item.id} className="p-3 sm:p-4 hover:bg-gray-50 transition">
                   <div className="flex items-center">
-                    <div className="relative w-16 h-16 mr-4 overflow-hidden rounded-md flex-shrink-0">
+                    <div className="relative w-12 h-12 sm:w-16 sm:h-16 mr-3 sm:mr-4 overflow-hidden rounded-md flex-shrink-0">
                       <img
                         src={item.imageUrl || "/placeholder.jpg"}
                         alt={item.title}
@@ -473,48 +477,48 @@ export default function PortadaPage() {
                       />
                     </div>
                     
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 truncate">{item.title}</h3>
-                      <p className="text-sm text-gray-500 line-clamp-1">{item.subtitle}</p>
-                      <span className={`text-xs px-2 py-1 rounded-full mt-1 inline-block ${
+                    <div className="flex-1 min-w-0 sm:min-w-0 md:min-w-0 lg:min-w-0 xl:min-w-0">
+                      <h3 className="font-medium text-gray-900 truncate text-sm sm:text-base">{item.title}</h3>
+                      <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{item.subtitle}</p>
+                      <span className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full mt-1 inline-block ${
                         item.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                       }`}>
                         {item.active ? 'Activo' : 'Inactivo'}
                       </span>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                       <button
                         onClick={() => handleReorder(item.id, 'up')}
                         disabled={item.order === 0}
                         className="p-1 rounded hover:bg-gray-200 disabled:opacity-50"
                       >
-                        <ChevronUp className="w-5 h-5" />
+                        <ChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button
                         onClick={() => handleReorder(item.id, 'down')}
                         disabled={item.order === heroItems.length - 1}
                         className="p-1 rounded hover:bg-gray-200 disabled:opacity-50"
                       >
-                        <ChevronDown className="w-5 h-5" />
+                        <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button
                         onClick={() => handleToggleActive(item.id)}
                         className="p-1 rounded hover:bg-gray-200"
                       >
-                        <Check className={`w-5 h-5 ${item.active ? 'text-green-600' : 'text-gray-400'}`} />
+                        <Check className={`w-4 h-4 sm:w-5 sm:h-5 ${item.active ? 'text-green-600' : 'text-gray-400'}`} />
                       </button>
                       <button
                         onClick={() => handleEditItem(item)}
                         className="p-1 rounded hover:bg-gray-200 text-blue-600"
                       >
-                        <Edit2 className="w-5 h-5" />
+                        <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button
                         onClick={() => handleDeleteItem(item.id)}
                         className="p-1 rounded hover:bg-gray-200 text-red-600"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   </div>
@@ -524,6 +528,6 @@ export default function PortadaPage() {
           )}
         </CardContent>
       </Card>
-    </>
+    </DashboardLayout>
   );
 }

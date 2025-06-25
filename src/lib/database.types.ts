@@ -1,6 +1,53 @@
 export type Database = {
   public: {
     Tables: {
+      convocatorias: {
+        Row: {
+          id: number
+          created_at: string | null
+          titulo: string | null
+          fecha: string | null
+          hora: string | null
+          lugar: string | null
+          equipo: string | null
+          rival: string | null
+          estado: string | null
+          slug: string | null
+          puntoencuentro: string | null
+          horaencuentro: string | null
+          notas: string | null
+        }
+        Insert: {
+          id?: number
+          created_at?: string | null
+          titulo?: string | null
+          fecha?: string | null
+          hora?: string | null
+          lugar?: string | null
+          equipo?: string | null
+          rival?: string | null
+          estado?: string | null
+          slug?: string | null
+          puntoencuentro?: string | null
+          horaencuentro?: string | null
+          notas?: string | null
+        }
+        Update: {
+          id?: number
+          created_at?: string | null
+          titulo?: string | null
+          fecha?: string | null
+          hora?: string | null
+          lugar?: string | null
+          equipo?: string | null
+          rival?: string | null
+          estado?: string | null
+          slug?: string | null
+          puntoencuentro?: string | null
+          horaencuentro?: string | null
+          notas?: string | null
+        }
+      },
       inscripcions: {
         Row: {
           id: number

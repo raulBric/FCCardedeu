@@ -7,9 +7,10 @@ import { motion, useInView } from "framer-motion"
 import { Calendar, MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import CardedeuLogo from "@/assets/Escudo.png"
 import PlaceholderLogo from "@/assets/blindaje.webp"
-import Adidas from "@/assets/Patrocinadores/Adidas.png"
-import FutbolEmotion from "@/assets/Patrocinadores/FutbolEmotion.svg"
-import Damm from "@/assets/Patrocinadores/damm.png"
+import Llorens from "@/assets/Patrocinadores/logo_llorens_verd.png"
+import Informatica from "@/assets/Patrocinadores/CentreInformatic.png"
+import Origo from "@/assets/Patrocinadores/OrigoBlau.png"
+import Clinica from "@/assets/Patrocinadores/ClinicaPobleSec.png"
 
 // Tipos para los partidos
 interface Sponsor {
@@ -51,7 +52,7 @@ const matchResults: Match[] = [
     awayScore: 1,
     homeLogo: CardedeuLogo,
     awayLogo: PlaceholderLogo,
-    sponsor: { name: "McDonald's", logo: Adidas, url: "https://www.mcdonalds.es" },
+    sponsor: { name: "Llorens GMR", logo: Llorens, url: "https://llorensgmr.com/es/" },
   },
   {
     id: 2,
@@ -67,7 +68,7 @@ const matchResults: Match[] = [
     awayScore: 2,
     homeLogo: CardedeuLogo,
     awayLogo: PlaceholderLogo,
-    sponsor: { name: "Adidas", logo: FutbolEmotion, url: "https://www.adidas.com" },
+    sponsor: { name: "Centre Informàtic Poble Sec", logo: Informatica, url: "https://cips.cat/" },
   },
   {
     id: 3,
@@ -83,7 +84,7 @@ const matchResults: Match[] = [
     awayScore: 0,
     homeLogo: CardedeuLogo,
     awayLogo: PlaceholderLogo,
-    sponsor: { name: "Coca-Cola", logo: Damm, url: "https://www.cocacola.es" },
+    sponsor: { name: "Origo", logo: Origo, url: "https://origo.cat/" },
   },
   {
     id: 4,
@@ -97,7 +98,7 @@ const matchResults: Match[] = [
     awayTeam: "UE Sant Celoni",
     homeLogo: CardedeuLogo,
     awayLogo: PlaceholderLogo,
-    sponsor: { name: "Damm", logo: Damm, url: "https://www.damm.com" },
+    sponsor: { name: "Clínica Dental Poble Sec", logo: Clinica, url: "https://clinicadentalpoblesec.com/" },
   },
 ]
 

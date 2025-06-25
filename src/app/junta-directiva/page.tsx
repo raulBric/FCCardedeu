@@ -25,7 +25,7 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "CARLOS NOU BLANCO",
     cargo: "President",
     foto: "/images/placeholder-person.png",
-    email: "president@fccardedeu.cat",
+    email: "president@fccardedeu.org",
     bio: "President del FC Cardedeu"
   },
   {
@@ -33,7 +33,6 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "JOSE RAMON HURTADO CASTRO",
     cargo: "Vicepresident 1",
     foto: "/images/placeholder-person.png",
-    email: "vicepresident1@fccardedeu.cat",
     bio: "Vicepresident del FC Cardedeu"
   },
   {
@@ -41,7 +40,6 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "PABLO LAGE CARRERIRAS",
     cargo: "Vicepresident 2",
     foto: "/images/placeholder-person.png",
-    email: "vicepresident2@fccardedeu.cat",
     bio: "Vicepresident del FC Cardedeu"
   },
   {
@@ -49,7 +47,7 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "ANGEL PALACIOS ORTEGA",
     cargo: "Secretari",
     foto: "/images/placeholder-person.png",
-    email: "secretaria@fccardedeu.cat",
+    email: "secretaria@fccardedeu.org",
     bio: "Secretari del FC Cardedeu"
   },
   {
@@ -57,7 +55,7 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "JOSE MARIA EXTRMERA LACAL",
     cargo: "Tresorer",
     foto: "/images/placeholder-person.png",
-    email: "tresoreria@fccardedeu.cat",
+    email: "tresoreria@fccardedeu.org",
     bio: "Tresorer del FC Cardedeu"
   },
   {
@@ -93,6 +91,7 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "VICENTE GALERA ESPADAS",
     cargo: "Vocal",
     foto: "/images/placeholder-person.png",
+    email: "delegats@fccardedeu.org",
     bio: "Vocal de la junta directiva del FC Cardedeu"
   },
   {
@@ -100,6 +99,7 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "XAVIER NOGUER",
     cargo: "Vocal",
     foto: "/images/placeholder-person.png",
+    email: "tic@fccardedeu.org",
     bio: "Vocal de la junta directiva del FC Cardedeu"
   }
 ];

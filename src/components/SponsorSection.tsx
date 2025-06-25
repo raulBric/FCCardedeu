@@ -4,11 +4,12 @@ import { useRef, useEffect, useState } from "react"
 import Image, { type StaticImageData } from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import Roca from "@/assets/Patrocinadores/RovaVillage.webp"
-import Adidas from "@/assets/Patrocinadores/Adidas.png"
-import Damm from "@/assets/Patrocinadores/damm.png"
-import McDonalds from "@/assets/Patrocinadores/McDonalds.jpeg"
-import FutbolEmotion from "@/assets/Patrocinadores/FutbolEmotion.svg"
+import Llorens from "@/assets/Patrocinadores/logo_llorens_verd.png"
+import Informatica from "@/assets/Patrocinadores/CentreInformatic.png"
+import Origo from "@/assets/Patrocinadores/OrigoBlau.png"
+import Clinica from "@/assets/Patrocinadores/ClinicaPobleSec.png"
+import Gabident from "@/assets/Patrocinadores/Gabident.png"
+import Gabident_test from "@/assets/Patrocinadores/Gabident_test.png"
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react"
 
 interface Sponsor {
@@ -22,45 +23,33 @@ interface Sponsor {
 const sponsorsData: Sponsor[] = [
   { 
     id: 1, 
-    name: "Ajuntament de Cardedeu", 
-    logo: Roca, 
-    url: "https://www.cardedeu.cat"
+    name: "Llorens GMR", 
+    logo: Llorens, 
+    url: "https://llorensgmr.com/es/"
   },
   { 
     id: 2, 
-    name: "Adidas", 
-    logo: Adidas, 
-    url: "https://www.adidas.es"
+    name: "Centre Informàtic Poble Sec", 
+    logo: Informatica, 
+    url: "https://cips.cat/"
   },
   { 
     id: 3, 
-    name: "Damm", 
-    logo: Damm, 
-    url: "https://www.damm.com"
+    name: "Gabident", 
+    logo: Gabident_test, 
+    url: "https://clinicagabidentcardedeu.com/"
   },
   { 
     id: 4, 
-    name: "McDonald's", 
-    logo: McDonalds, 
-    url: "https://www.mcdonalds.es"
+    name: "Clínica Dental Poble Sec", 
+    logo: Clinica, 
+    url: "https://clinicadentalpoblesec.com/"
   },
   { 
     id: 5, 
-    name: "Adidas Training", 
-    logo: Adidas, 
-    url: "https://www.adidas.com/training"
-  },
-  { 
-    id: 6, 
-    name: "Grup Damm", 
-    logo: Damm, 
-    url: "https://www.damm.com"
-  },
-  { 
-    id: 7, 
-    name: "Futbol Emotion", 
-    logo: FutbolEmotion, 
-    url: "https://www.futbolemotion.com"
+    name: "Origo", 
+    logo: Origo, 
+    url: "https://origo.cat/"
   },
 ]
 

@@ -6,12 +6,12 @@ import { Mail, Phone, User } from 'lucide-react';
 import Header from '@/components/Header';
 
 // Importación de logos de patrocinadores usando rutas relativas
-import AdidasLogo from '@/assets/Patrocinadores/Adidas.png';
-import FutbolEmotionLogo from '@/assets/Patrocinadores/FutbolEmotion.svg';
-import McDonaldsLogo from '@/assets/Patrocinadores/McDonalds.jpeg';
-import RovaVillageLogo from '@/assets/Patrocinadores/RovaVillage.webp';
-import DammLogo from '@/assets/Patrocinadores/damm.png';
-import OtroLogo from '@/assets/Patrocinadores/descarga.png';
+import Llorens from "@/assets/Patrocinadores/logo_llorens_verd.png"
+import Informatica from "@/assets/Patrocinadores/CentreInformatic.png"
+import Origo from "@/assets/Patrocinadores/OrigoBlau.png"
+import Clinica from "@/assets/Patrocinadores/ClinicaPobleSec.png"
+import Gabident from "@/assets/Patrocinadores/Gabident_test.png"
+import { el } from 'date-fns/locale';
 
 // Definición del tipo para patrocinador
 type Patrocinador = {
@@ -28,58 +28,50 @@ type Patrocinador = {
 const patrocinadores: Patrocinador[] = [
   {
     id: 1,
-    nombre: 'Adidas',
-    logo: AdidasLogo,
-    descripcion: 'Adidas és una marca global de roba esportiva que ofereix equipament d\'alta qualitat. El nostre proveïdor oficial d\'equipament esportiu per al FC Cardedeu.',
-    sector: 'Equipament Esportiu',
-    web: 'https://www.adidas.es',
+    nombre: 'Llorens GMR',
+    logo: Llorens,
+    descripcion: 'Llorens GMR és una empresa líder en la gestió integral de residus, compromesa amb la sostenibilitat i economia circular.',
+    sector: 'Gestor de material reciclatge',
+    web: 'https://llorensgmr.com/es/',
     destacado: true
   },
   {
     id: 2,
-    nombre: 'Fútbol Emotion',
-    logo: FutbolEmotionLogo,
-    descripcion: 'Botiga especialitzada en material de futbol i equipament esportiu, donant suport al nostre club des de fa anys amb el millor material tècnic.',
-    sector: 'Retail Esportiu',
-    web: 'https://www.futbolemotion.com',
+    nombre: 'Centre Informàtic Poble Sec',
+    logo: Informatica,
+    descripcion: 'Centre Informàtic del Poble Sec és un servei tècnic de proximitat, especialitzat en solucions informàtiques amb un tracte professional i de confiança.',
+    sector: 'Serveis informàtics',
+    web: 'https://cips.cat/',
     destacado: true
   },
   {
     id: 3,
-    nombre: 'McDonald\'s',
-    logo: McDonaldsLogo,
-    descripcion: 'La coneguda cadena de restaurants de menjar ràpid col·labora amb el FC Cardedeu en esdeveniments especials i promocions per als nostres jugadors i aficionats.',
-    sector: 'Restauració',
-    web: 'https://www.mcdonalds.es',
+    nombre: 'Gabident',
+    logo: Gabident,
+    descripcion: 'Gabident és una clínica dental a Cardedeu amb més de 25 anys d\'experiència, que ofereix un tracte proper i familiar en totes les especialitats odontològiques.',
+    sector: 'Salut',
+    web: 'https://clinicagabidentcardedeu.com/',
     destacado: false
   },
   {
     id: 4,
-    nombre: 'La Roca Village',
-    logo: RovaVillageLogo,
-    descripcion: 'Centre comercial outlet de luxe situat prop de Cardedeu que dóna suport al nostre club i promou l\'esport local.',
-    sector: 'Retail',
-    web: 'https://www.larocavillage.com',
+    nombre: 'Origo',
+    logo: Origo,
+    descripcion: 'Origo és una cadena de botigues d\'alimentació saludable, compromesa amb els productes de proximitat i la sostenibilitat.',
+    sector: 'Comerç al detall d\'alimentació ',
+    web: 'https://origo.cat/',
     destacado: false
   },
   {
     id: 5,
-    nombre: 'Damm',
-    logo: DammLogo,
-    descripcion: 'Empresa cervesera amb una llarga tradició de suport a l\'esport català. Patrocinador oficial de la secció sènior del FC Cardedeu.',
-    sector: 'Begudes',
-    web: 'https://www.damm.com',
-    destacado: true
-  },
-  {
-    id: 6,
-    nombre: 'Diputació de Barcelona',
-    logo: OtroLogo,
-    descripcion: 'Entitat pública que col·labora amb el FC Cardedeu en el desenvolupament d\'iniciatives esportives i socials per a la comunitat local.',
-    sector: 'Institució Pública',
-    web: 'https://www.diba.cat',
+    nombre: 'Clínica Dental Poble Sec',
+    logo: Clinica,
+    descripcion: 'Clínica Dental Poble Sec és un centre de salut bucodental, compromès amb oferir tractaments integrals',
+    sector: 'Salut',
+    web: 'https://clinicadentalpoblesec.com/',
     destacado: false
   },
+
 ];
 
 export default function PatrocinadorsContent() {
@@ -163,20 +155,20 @@ export default function PatrocinadorsContent() {
               <div className="bg-white bg-opacity-10 p-6 rounded-lg border border-white border-opacity-20 flex flex-col items-center text-center">
                 <User size={40} className="mb-4 text-white" />
                 <h3 className="font-bold text-xl mb-2 text-white">Responsable</h3>
-                <p className="text-white">Nom i Cognom del responsable</p>
+                <p className="text-white">Aleix</p>
               </div>
               <div className="bg-white bg-opacity-10 p-6 rounded-lg border border-white border-opacity-20 flex flex-col items-center text-center">
                 <Mail size={40} className="mb-4 text-white" />
                 <h3 className="font-bold text-xl mb-2 text-white">Email</h3>
-                <a href="mailto:patrocinis@fccardedeu.cat" className="text-white hover:underline">
-                  patrocinis@fccardedeu.cat
+                <a href="mailto:publicitat@fccardedeu.org" className="text-white hover:underline">
+                  publicitat@fccardedeu.org
                 </a>
               </div>
               <div className="bg-white bg-opacity-10 p-6 rounded-lg border border-white border-opacity-20 flex flex-col items-center text-center">
                 <Phone size={40} className="mb-4 text-white" />
                 <h3 className="font-bold text-xl mb-2 text-white">Telèfon</h3>
                 <a href="tel:+34666123456" className="text-white hover:underline">
-                  666 123 456
+                  
                 </a>
               </div>
             </div>

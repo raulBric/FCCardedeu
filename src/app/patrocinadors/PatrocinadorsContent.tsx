@@ -16,10 +16,10 @@ import { el } from 'date-fns/locale';
 // Definición del tipo para patrocinador
 type Patrocinador = {
   id: number;
-  nombre: string;
+  // nombre: string;
   logo: any;
-  descripcion: string;
-  sector: string;
+  // descripcion: string;
+  // sector: string;
   web: string;
   destacado: boolean;
 };
@@ -28,46 +28,46 @@ type Patrocinador = {
 const patrocinadores: Patrocinador[] = [
   {
     id: 1,
-    nombre: 'Llorens GMR',
+    // nombre: 'Llorens GMR',
     logo: Llorens,
-    descripcion: 'Llorens GMR és una empresa líder en la gestió integral de residus, compromesa amb la sostenibilitat i economia circular.',
-    sector: 'Gestor de material reciclatge',
+    // descripcion: 'Llorens GMR és una empresa líder en la gestió integral de residus, compromesa amb la sostenibilitat i economia circular.',
+    // sector: 'Gestor de material reciclatge',
     web: 'https://llorensgmr.com/es/',
     destacado: true
   },
   {
     id: 2,
-    nombre: 'Centre Informàtic Poble Sec',
+    // nombre: 'Centre Informàtic Poble Sec',
     logo: Informatica,
-    descripcion: 'Centre Informàtic del Poble Sec és un servei tècnic de proximitat, especialitzat en solucions informàtiques amb un tracte professional i de confiança.',
-    sector: 'Serveis informàtics',
+    // descripcion: 'Centre Informàtic del Poble Sec és un servei tècnic de proximitat, especialitzat en solucions informàtiques amb un tracte professional i de confiança.',
+    // sector: 'Serveis informàtics',
     web: 'https://cips.cat/',
     destacado: true
   },
   {
     id: 3,
-    nombre: 'Gabident',
+    // nombre: 'Gabident',
     logo: Gabident,
-    descripcion: 'Gabident és una clínica dental a Cardedeu amb més de 25 anys d\'experiència, que ofereix un tracte proper i familiar en totes les especialitats odontològiques.',
-    sector: 'Salut',
+    // descripcion: 'Gabident és una clínica dental a Cardedeu amb més de 25 anys d\'experiència, que ofereix un tracte proper i familiar en totes les especialitats odontològiques.',
+    // sector: 'Salut',
     web: 'https://clinicagabidentcardedeu.com/',
     destacado: false
   },
   {
     id: 4,
-    nombre: 'Origo',
+    // nombre: 'Origo',
     logo: Origo,
-    descripcion: 'Origo és una cadena de botigues d\'alimentació saludable, compromesa amb els productes de proximitat i la sostenibilitat.',
-    sector: 'Comerç al detall d\'alimentació ',
+    // descripcion: 'Origo és una cadena de botigues d\'alimentació saludable, compromesa amb els productes de proximitat i la sostenibilitat.',
+    // sector: 'Comerç al detall d\'alimentació ',
     web: 'https://origo.cat/',
     destacado: false
   },
   {
     id: 5,
-    nombre: 'Clínica Dental Poble Sec',
+    // nombre: 'Clínica Dental Poble Sec',
     logo: Clinica,
-    descripcion: 'Clínica Dental Poble Sec és un centre de salut bucodental, compromès amb oferir tractaments integrals',
-    sector: 'Salut',
+    // descripcion: 'Clínica Dental Poble Sec és un centre de salut bucodental, compromès amb oferir tractaments integrals',
+    // sector: 'Salut',
     web: 'https://clinicadentalpoblesec.com/',
     destacado: false
   },
@@ -105,7 +105,7 @@ export default function PatrocinadorsContent() {
                 <div className="relative h-60 w-full overflow-hidden border-b border-gray-100">
                     <Image 
                       src={patrocinador.logo} 
-                      alt={`Logo de ${patrocinador.nombre}`}
+                      alt={`Logo`}
                       className="object-contain w-full h-full"
                       fill
                       sizes="100vw"
@@ -113,9 +113,9 @@ export default function PatrocinadorsContent() {
                     />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{patrocinador.nombre}</h3>
+                  {/* <h3 className="text-xl font-bold mb-2">{patrocinador.nombre}</h3>
                   <p className="text-red-600 text-sm font-medium mb-3">{patrocinador.sector}</p>
-                  <p className="text-gray-600 mb-4">{patrocinador.descripcion}</p>
+                  <p className="text-gray-600 mb-4">{patrocinador.descripcion}</p> */}
                   <a 
                     href={patrocinador.web}
                     target="_blank"

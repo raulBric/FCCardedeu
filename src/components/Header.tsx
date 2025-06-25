@@ -49,6 +49,7 @@ const menuStructure: MenuStructureItem[] = [
     type: "dropdown" as const,
     items: [
         { name: "Junta Directiva", path: "/junta-directiva" },
+        { name: "Patrocinadors", path: "/patrocinadors" },
     ],
   },
   {

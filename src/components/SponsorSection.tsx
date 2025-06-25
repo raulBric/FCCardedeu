@@ -273,7 +273,7 @@ export default function SponsorsSection() {
           className="text-center mt-16"
         >
           <Link 
-            href="/patrocini" 
+            href="/patrocinadors" 
             className="inline-block bg-white text-red-700 font-medium py-3 px-8 rounded-md transition-colors shadow-md hover:bg-gray-100"
           >
             Converteix-te en patrocinador

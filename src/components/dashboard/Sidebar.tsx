@@ -17,7 +17,7 @@ import {
   ShieldIcon,
   History
 } from "lucide-react";
-import Escudo from "@/assets/Escudo.png";
+import Escudo from "@/assets/Escudo.webp";
 import { supabase } from "@/lib/supabaseClient";
 
 const navItems = [

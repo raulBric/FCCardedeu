@@ -7,7 +7,7 @@ import {
   MapPin,
   User,
 } from "lucide-react";
-import Escudo from "@/assets/Escudo.png";
+import Escudo from "@/assets/Escudo.webp";
 
 export default function Footer() {
   return (

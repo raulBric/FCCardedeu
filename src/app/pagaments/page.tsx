@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import CheckoutForm from "@/app/pagaments/checkout-form"
 import Header from "@/components/Header"
-import Escudo from "@/assets/Escudo.png"
+import Escudo from "@/assets/Escudo.webp"
 
 // Inicializa Stripe (en una aplicación real, usa tu clave pública real)
 const stripePromise = loadStripe("pk_test_51NpTMtKZ6R0djt0A0RAg1234567890ABCDEFGHIJKLMN")

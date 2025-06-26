@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import CardedeuLogo from "@/assets/Escudo.png";
+import CardedeuLogo from "@/assets/Escudo.webp";
 
 // INICIO CÓDIGO TEMPORAL - ELIMINAR CUANDO SE QUITE EL MODO MANTENIMIENTO
 export default function MaintenancePage() {

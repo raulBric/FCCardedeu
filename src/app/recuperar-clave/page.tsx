@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
-import Escudo from "@/assets/Escudo.png";
+import Escudo from "@/assets/Escudo.webp";
 
 export default function RecuperarClavePage() {
   const [email, setEmail] = useState("");

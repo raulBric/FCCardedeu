@@ -15,6 +15,7 @@ interface Jugador {
   edad?: number;
   altura?: string;
   temporadas?: number;
+  esCapitan?: boolean;
 }
 
 interface CuerpoTecnico {
@@ -93,7 +94,8 @@ const jugadores: Jugador[] = [
     foto: "/images/placeholder-person.png",
     edad: 26,
     altura: "1,83m",
-    temporadas: 2
+    temporadas: 2,
+    esCapitan: true
   },
   {
     id: 5,
@@ -134,7 +136,8 @@ const jugadores: Jugador[] = [
     foto: "/images/placeholder-person.png",
     edad: 25,
     altura: "1,79m",
-    temporadas: 2
+    temporadas: 2,
+    esCapitan: true
   },
   {
     id: 9,
@@ -196,7 +199,8 @@ const jugadores: Jugador[] = [
     foto: "/images/placeholder-person.png",
     edad: 27,
     altura: "1,84m",
-    temporadas: 3
+    temporadas: 3,
+    esCapitan: true
   },
   {
     id: 15,
@@ -410,7 +414,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -447,7 +456,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -484,7 +498,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -521,7 +540,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -545,7 +569,7 @@ export default function PrimerEquipPage() {
                 <Clock className="w-6 h-6 text-red-600 mr-3" />
                 <div>
                   <h3 className="font-medium">Partits com a local</h3>
-                  <p className="text-gray-700">Dissabtes, 16:00h</p>
+                  <p className="text-gray-700">Diumenges, 12:00h</p>
                 </div>
               </div>
               
@@ -553,7 +577,7 @@ export default function PrimerEquipPage() {
                 <Calendar className="w-6 h-6 text-red-600 mr-3" />
                 <div>
                   <h3 className="font-medium">Entrenaments</h3>
-                  <p className="text-gray-700">Dimarts i dijous de 20:00h a 21:30h</p>
+                  <p className="text-gray-700">Dimarts, Dijous i Divendres 20:30h </p>
                 </div>
               </div>
               

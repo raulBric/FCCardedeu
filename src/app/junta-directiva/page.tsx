@@ -187,10 +187,10 @@ export default function JuntaDirectivaPage() {
               <div>
                 <h3 className="font-medium text-gray-800">Correu electrònic</h3>
                 <a 
-                  href="mailto:juntadirectiva@fccardedeu.cat" 
+                  href="mailto:administracio@fccardedeu.org" 
                   className="text-red-600 hover:underline"
                 >
-                  juntadirectiva@fccardedeu.cat
+                  administracio@fccardedeu.org
                 </a>
               </div>
             </div>
@@ -200,10 +200,10 @@ export default function JuntaDirectivaPage() {
               <div>
                 <h3 className="font-medium text-gray-800">Telèfon</h3>
                 <a 
-                  href="tel:938461013" 
+                  href="tel:938713131" 
                   className="text-red-600 hover:underline"
                 >
-                  93 846 10 13
+                  93 871 31 31
                 </a>
               </div>
             </div>

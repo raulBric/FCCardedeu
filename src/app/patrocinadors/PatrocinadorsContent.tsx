@@ -155,7 +155,7 @@ export default function PatrocinadorsContent() {
               <div className="bg-white bg-opacity-10 p-6 rounded-lg border border-white border-opacity-20 flex flex-col items-center text-center">
                 <User size={40} className="mb-4 text-white" />
                 <h3 className="font-bold text-xl mb-2 text-white">Responsable</h3>
-                <p className="text-white">Aleix</p>
+                <p className="text-white">Aleix Pinos</p>
               </div>
               <div className="bg-white bg-opacity-10 p-6 rounded-lg border border-white border-opacity-20 flex flex-col items-center text-center">
                 <Mail size={40} className="mb-4 text-white" />

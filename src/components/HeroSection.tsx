@@ -26,7 +26,7 @@ const imatges = [
   {
     src: Equipo2,
     alt: "Entrenament del FC Cardedeu",
-    titol: "Formant campions des de 1934",
+    titol: "Formant campions des de 1916",
   },
   {
     src: Equipo3,

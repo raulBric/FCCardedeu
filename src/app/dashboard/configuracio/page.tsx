@@ -31,7 +31,7 @@ export default function ConfiguracionPage() {
     siteName: "FC Cardedeu",
     siteDescription: "Web oficial del Futbol Club Cardedeu",
     maintenanceMode: false,
-    contactEmail: "info@fccardedeu.com",
+    contactEmail: "info@fccardedeu.org",
     privacyPolicyUrl: "/politica-privacidad",
     cookieNoticeDays: 30,
     allowRegistrations: true,

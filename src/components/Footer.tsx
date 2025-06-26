@@ -93,10 +93,10 @@ export default function Footer() {
               <li className="flex items-center justify-center md:justify-start text-sm">
                 <Mail className="w-4 h-4 mr-2 text-blue-500" />
                 <a
-                  href="mailto:info@fccardedeu.com"
+                  href="mailto:info@fccardedeu.org"
                   className="hover:text-blue-500 transition-colors"
                 >
-                  info@fccardedeu.com
+                  info@fccardedeu.org
                 </a>
               </li>
               <li className="flex items-center justify-center md:justify-start text-sm">

@@ -84,6 +84,7 @@ const miembrosJunta: MiembroJunta[] = [
     nombre: "ALEIX PINOS FLORES",
     cargo: "Vocal",
     foto: "/images/placeholder-person.png",
+    email: "publicitat@fccardedeu.org",
     bio: "Vocal de la junta directiva del FC Cardedeu"
   },
   {

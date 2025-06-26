@@ -274,7 +274,7 @@ export default function PrimerEquipPage() {
               <Trophy className="h-12 w-12 text-red-600 mr-4" />
               <div>
                 <h3 className="font-medium text-lg">Categoria</h3>
-                <p className="text-gray-700">Primera Catalana</p>
+                <p className="text-gray-700">Segona Catalana</p>
               </div>
             </div>
             
@@ -290,7 +290,7 @@ export default function PrimerEquipPage() {
               <Calendar className="h-12 w-12 text-red-600 mr-4" />
               <div>
                 <h3 className="font-medium text-lg">Temporada</h3>
-                <p className="text-gray-700">2024-2025</p>
+                <p className="text-gray-700">2025-2026</p>
               </div>
             </div>
             

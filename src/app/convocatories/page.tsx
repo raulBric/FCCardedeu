@@ -3,7 +3,7 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Home, Plane } from "lucide-react";
+import { Home, Plane, ExternalLink } from "lucide-react";
 import Header from "@/components/Header";
 import { supabase } from "@/services/supabaseService";
 
@@ -37,6 +37,175 @@ const teams: string[] = [
 ];
 
 // Los datos ahora vendrán de Supabase
+
+// Datos de patrocinadores con rutas relativas a las imágenes
+const sponsorsData = [
+  { 
+    id: 1, 
+    name: "Llorens GMR", 
+    imagePath: "/images/patrocinadores/logo_llorens_verd.png", 
+    url: "https://llorensgmr.com/es/",
+    description: "Gestor de material reciclatge"
+  },
+  { 
+    id: 2, 
+    name: "Centre Informàtic Poble Sec", 
+    imagePath: "/images/patrocinadores/CentreInformatic.png", 
+    url: "https://cips.cat/",
+    description: "Solucions informàtiques"
+  },
+  { 
+    id: 3, 
+    name: "Gabident", 
+    imagePath: "/images/patrocinadores/Gabident_test.png", 
+    url: "https://clinicagabidentcardedeu.com/",
+    description: "Clínica dental "
+  },
+  { 
+    id: 4, 
+    name: "Clínica Dental Poble Sec", 
+    imagePath: "/images/patrocinadores/ClinicaPobleSec.png", 
+    url: "https://clinicadentalpoblesec.com/",
+    description: "Clínica dental "
+  },
+  { 
+    id: 5, 
+    name: "Origo", 
+    imagePath: "/images/patrocinadores/OrigoBlau.png", 
+    url: "https://origo.cat/",
+    description: "Comerç al detall d\'alimentació"
+  },
+];
+
+// Componente de publicidad con patrocinador aleatorio - Diseño elegante y moderno
+function RandomSponsorCard() {
+  const [currentSponsorIndex, setCurrentSponsorIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Iniciar con un patrocinador aleatorio y rotar cada 6 segundos
+  useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * sponsorsData.length);
+    setCurrentSponsorIndex(randomIndex);
+    
+    // Solo rotar cuando no está el mouse encima
+    const interval = setInterval(() => {
+      if (!isHovered) {
+        setCurrentSponsorIndex((prevIndex) => 
+          prevIndex === sponsorsData.length - 1 ? 0 : prevIndex + 1
+        );
+      }
+    }, 6000);
+    
+    return () => clearInterval(interval);
+  }, [isHovered]);
+  
+  const currentSponsor = sponsorsData[currentSponsorIndex];
+  
+  // Funciones para navegar manualmente entre patrocinadores
+  const goToNext = () => {
+    setCurrentSponsorIndex((prev) => 
+      prev === sponsorsData.length - 1 ? 0 : prev + 1
+    );
+  };
+  
+  const goToPrevious = () => {
+    setCurrentSponsorIndex((prev) => 
+      prev === 0 ? sponsorsData.length - 1 : prev - 1
+    );
+  };
+  
+  return (
+    <div 
+      className="w-full mb-6 overflow-hidden group relative" 
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Panel principal con fondo blanco */}
+      <div className="w-full bg-white border border-gray-100 rounded-xl shadow-xl p-4 overflow-hidden">
+        <div className="absolute inset-0 bg-white z-0"></div>
+        
+        {/* Burbujas decorativas */}
+        <div className="absolute -top-12 -right-12 w-24 h-24 bg-red-50 rounded-full opacity-20"></div>
+        <div className="absolute -bottom-8 -left-8 w-16 h-16 bg-red-50 rounded-full opacity-30"></div>
+        <div className="absolute top-1/2 right-1/3 w-8 h-8 bg-red-100 rounded-full opacity-20"></div>
+        
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 z-10 relative">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            {/* Logo con efecto de resalte - Solo aumentamos el tamaño de la imagen */}
+            <div className="bg-white rounded-lg p-3 shadow-lg border-2 border-gray-100 flex items-center justify-center group-hover:shadow-xl transition-all duration-300">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                <Image
+                  src={currentSponsor.imagePath}
+                  alt={`Logo ${currentSponsor.name}`}
+                  fill
+                  className="object-contain p-1"
+                  priority
+                />
+              </div>
+            </div>
+            
+            {/* Información del patrocinador */}
+            <div>
+              <p className="text-xs uppercase tracking-wider font-medium text-red-600 mb-1">Col·laborador oficial</p>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800">
+                {currentSponsor.name}
+              </h3>
+              <p className="text-sm text-gray-600 line-clamp-2">{currentSponsor.description}</p>
+            </div>
+          </div>
+          
+          {/* Botón de visita */}
+          <Link
+            href={currentSponsor.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center gap-2 text-sm font-medium group-hover:shadow-md w-full sm:w-auto justify-center mt-2 sm:mt-0"
+          >
+            <span>Descobreix més</span>
+            <ExternalLink size={16} />
+          </Link>
+        </div>
+        
+        {/* Controladores e indicadores */}
+        <div className="flex justify-center items-center mt-4 gap-2">
+          {/* Botón anterior */}
+          <button 
+            onClick={(e) => { e.preventDefault(); goToPrevious(); }}
+            className="w-7 h-7 rounded-full bg-white hover:bg-red-50 flex items-center justify-center border border-gray-200 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            aria-label="Patrocinador anterior"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          
+          {/* Indicadores de posición */}
+          <div className="flex gap-1.5">
+            {sponsorsData.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => { e.preventDefault(); setCurrentSponsorIndex(index); }}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentSponsorIndex ? 'bg-red-600 w-4' : 'bg-gray-300 hover:bg-red-300'}`}
+                aria-label={`Ir al patrocinador ${index + 1}`}
+              />
+            ))}
+          </div>
+          
+          {/* Botón siguiente */}
+          <button 
+            onClick={(e) => { e.preventDefault(); goToNext(); }}
+            className="w-7 h-7 rounded-full bg-white hover:bg-red-50 flex items-center justify-center border border-gray-200 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            aria-label="Siguiente patrocinador"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -114,41 +283,8 @@ export default function ConvocatoriasPage() {
     <>
     <Header />
     <main className="max-w-4xl mx-auto p-6 bg-white  mt-20 relative">
-      {/* Componente de Publicidad destacado arriba - Versión mejorada */}
-      <div className="w-full bg-gradient-to-r from-red-400 to-red-600 text-white p-4 rounded-lg shadow-md mb-6 border border-red-400">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-white p-2 rounded-full">
-              <Image
-                src="/placeholder.svg?height=40&width=40&text=FC"
-                alt="Logo patrocinador"
-                width={32}
-                height={32}
-                className="object-contain"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-200">Patrocinador Oficial</p>
-              <Link
-                href="https://www.dgital.io"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xl font-bold text-white hover:text-yellow-300 transition-colors"
-              >
-                Dgital
-              </Link>
-            </div>
-          </div>
-          <Link
-            href="https://www.patrocinador.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-white hover:bg-yellow-400 text-red-900 font-medium px-3 py-1 rounded-md text-sm transition-colors"
-          >
-            Visitar
-          </Link>
-        </div>
-      </div>
+      {/* Componente de Publicidad con patrocinador aleatorio rotativo */}
+      <RandomSponsorCard />
       
       <h1 className="text-3xl font-bold text-red-600 text-center mb-6">Convocatòries de Partits</h1>
 

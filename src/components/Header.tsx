@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import Escudo from "@/assets/Escudo.png";
+import Escudo from "@/assets/Escudo.webp";
 
 // ---------------- Constants -----------------
 const SCROLL_THRESHOLD = 10;
@@ -30,8 +30,8 @@ const menuStructure: MenuStructureItem[] = [
     type: "dropdown" as const,
     items: [
       { name: "Primer Equip", path: "/primer-equip" },
-      { name: "Futbol Base", path: "/futbol-base" },
-      { name: "Femení", path: "/femeni" },
+      // { name: "Futbol Base", path: "/futbol-base" },
+      // { name: "Femení", path: "/femeni" },
     ],
   },
   {

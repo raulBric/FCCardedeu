@@ -15,6 +15,14 @@ export const metadata = {
     ...baseMetadata.openGraph,
     url: "https://www.fccardedeu.org",
     siteName: "FC Cardedeu",
+    images: [
+      {
+        url: '/Escudo.webp',
+        width: 300,
+        height: 300,
+        alt: 'Escudo FC Cardedeu',
+      }
+    ],
   },
 };
 
@@ -27,15 +35,7 @@ export default function RootLayout({
     <html lang="ca">
       <head>
         {/* Schema.org para SEO */}
-        <OrganizationSchema url="https://www.fccardedeu.org" />
-        
-        {/* OpenGraph básico para todo el sitio */}
-        <BaseOpenGraph
-          title="FC Cardedeu - Club de fútbol de Cardedeu"
-          description="FC Cardedeu, club de fútbol con más de 90 años de historia en Cardedeu, Barcelona. Formación de jugadores y competición en todas las categorías."
-          url="https://www.fccardedeu.org"
-          locale="ca_ES"
-        />
+        <OrganizationSchema url="https://www.fccardedeu.org" logo="/Escudo.webp" />
       </head>
       <body className={exo2.className}>
         <main>{children}</main>

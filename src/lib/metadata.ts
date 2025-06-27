@@ -15,10 +15,10 @@ export const baseMetadata: Metadata = {
     siteName: "FC Cardedeu",
     images: [
       {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "FC Cardedeu - Web Oficial",
+        url: "/Escudo.webp",
+        width: 300,
+        height: 300,
+        alt: "FC Cardedeu - Escudo Oficial",
       },
     ],
   },
@@ -26,7 +26,7 @@ export const baseMetadata: Metadata = {
     card: "summary_large_image",
     title: "FC Cardedeu | Web Oficial",
     description: "Web oficial del FC Cardedeu - Club de fútbol desde 1916 en Cardedeu, Barcelona",
-    images: ["/og-image.jpg"],
+    images: ["/Escudo.webp"],
   },
   robots: {
     index: true,

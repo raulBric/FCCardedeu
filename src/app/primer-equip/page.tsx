@@ -15,6 +15,7 @@ interface Jugador {
   edad?: number;
   altura?: string;
   temporadas?: number;
+  esCapitan?: boolean;
 }
 
 interface CuerpoTecnico {
@@ -28,195 +29,248 @@ interface CuerpoTecnico {
 const cuerpoTecnico: CuerpoTecnico[] = [
   {
     id: 1,
-    nombre: "Marc Gurri",
+    nombre: "PARRA TOLEDANO, DAVID",
     cargo: "Entrenador principal",
     foto: "/images/placeholder-person.png"
   },
   {
     id: 2,
-    nombre: "Alex Martínez",
+    nombre: "LOPEZ NUÑEZ, SANDRO",
     cargo: "Segon entrenador",
     foto: "/images/placeholder-person.png"
   },
   {
     id: 3,
-    nombre: "Laura Puig",
+    nombre: "CARCEDO RONCERO, ALBERT",
     cargo: "Preparador físic",
     foto: "/images/placeholder-person.png"
   },
   {
     id: 4,
-    nombre: "Joan Sala",
-    cargo: "Fisioterapeuta",
+    nombre: "LUCERO RAMON, ORIOL",
+    cargo: "Delegat",
     foto: "/images/placeholder-person.png"
   }
 ];
 
 // Datos de los jugadores
 const jugadores: Jugador[] = [
-  // Porteros
+  // Porteros y defensas
   {
     id: 1,
-    nombre: "Marc Vila",
+    nombre: "M'BALLO DIAO, TIDIANE",
     posicion: "Porter",
     numero: 1,
     foto: "/images/placeholder-person.png",
-    edad: 27,
-    altura: "1,89m",
-    temporadas: 3
+    edad: 24,
+    altura: "1,85m",
+    temporadas: 1
   },
   {
     id: 2,
-    nombre: "Aleix Puig",
+    nombre: "SANCHEZ ANCOS, DANIEL",
     posicion: "Porter",
     numero: 13,
     foto: "/images/placeholder-person.png",
     edad: 23,
-    altura: "1,85m",
+    altura: "1,82m",
     temporadas: 1
   },
-  // Defensas
   {
     id: 3,
-    nombre: "Gerard Martí",
+    nombre: "BALDE SOW, ALHAJI",
     posicion: "Defensa central",
     numero: 4,
     foto: "/images/placeholder-person.png",
-    edad: 29,
+    edad: 25,
     altura: "1,86m",
-    temporadas: 4
+    temporadas: 1
   },
   {
     id: 4,
-    nombre: "Pol Casals",
+    nombre: "LOPEZ RAMIREZ, CARLOS",
     posicion: "Defensa central",
     numero: 2,
     foto: "/images/placeholder-person.png",
-    edad: 25,
-    altura: "1,88m",
-    temporadas: 2
+    edad: 26,
+    altura: "1,83m",
+    temporadas: 2,
+    esCapitan: true
   },
   {
     id: 5,
-    nombre: "Oriol Mas",
+    nombre: "ULLDEMOLINS ABAD, JOSEP",
     posicion: "Lateral dret",
     numero: 3,
     foto: "/images/placeholder-person.png",
     edad: 24,
     altura: "1,78m",
-    temporadas: 3
+    temporadas: 1
   },
   {
     id: 6,
-    nombre: "Adrià Costa",
+    nombre: "EHLILUCH EL LAITI, MUHAMED ACHRAF",
     posicion: "Lateral esquerre",
     numero: 5,
     foto: "/images/placeholder-person.png",
-    edad: 26,
+    edad: 23,
     altura: "1,80m",
-    temporadas: 2
+    temporadas: 1
   },
   // Mediocampistas
   {
     id: 7,
-    nombre: "Jordi Pujol",
+    nombre: "DIALLO, MOUNTAGA",
     posicion: "Migcampista central",
     numero: 6,
     foto: "/images/placeholder-person.png",
-    edad: 30,
+    edad: 26,
     altura: "1,82m",
-    temporadas: 5
-  },
-  {
-    id: 8,
-    nombre: "Pau Ferrer",
-    posicion: "Migcampista central",
-    numero: 8,
-    foto: "/images/placeholder-person.png",
-    edad: 23,
-    altura: "1,75m",
     temporadas: 1
   },
   {
+    id: 8,
+    nombre: "CASTELLVELL TAPIA, ROGER",
+    posicion: "Migcampista central",
+    numero: 8,
+    foto: "/images/placeholder-person.png",
+    edad: 25,
+    altura: "1,79m",
+    temporadas: 2,
+    esCapitan: true
+  },
+  {
     id: 9,
-    nombre: "Àlex Serra",
+    nombre: "NAVAJAS PÉREZ, ELOI",
     posicion: "Migcampista ofensiu",
     numero: 10,
     foto: "/images/placeholder-person.png",
     edad: 26,
     altura: "1,76m",
-    temporadas: 3
+    temporadas: 2
   },
   {
     id: 10,
-    nombre: "Jan Bosch",
-    posicion: "Extrem dret",
-    numero: 7,
+    nombre: "BOIX ROCA, MARC",
+    posicion: "Migcampista central",
+    numero: 16,
     foto: "/images/placeholder-person.png",
     edad: 22,
-    altura: "1,74m",
-    temporadas: 2
+    altura: "1,77m",
+    temporadas: 1
   },
-  // Delanteros
+  // Más mediocampistas
   {
     id: 11,
-    nombre: "Roger Soler",
-    posicion: "Extrem esquerre",
-    numero: 11,
+    nombre: "BELTRAN HURTADO, GERARD",
+    posicion: "Migcampista defensiu",
+    numero: 15,
     foto: "/images/placeholder-person.png",
-    edad: 25,
-    altura: "1,75m",
-    temporadas: 3
+    edad: 24,
+    altura: "1,80m",
+    temporadas: 1
   },
   {
     id: 12,
-    nombre: "Arnau Valls",
-    posicion: "Davanter centre",
-    numero: 9,
+    nombre: "DANJO JALLOW, BURAMA",
+    posicion: "Migcampista central",
+    numero: 17,
     foto: "/images/placeholder-person.png",
-    edad: 28,
+    edad: 25,
     altura: "1,83m",
-    temporadas: 4
+    temporadas: 2
   },
   {
     id: 13,
-    nombre: "Quim Riera",
-    posicion: "Davanter centre",
-    numero: 19,
+    nombre: "TOURE CISSE, ALSENY",
+    posicion: "Migcampista ofensiu",
+    numero: 18,
     foto: "/images/placeholder-person.png",
     edad: 24,
     altura: "1,81m",
     temporadas: 1
   },
+  // Delanteros
   {
     id: 14,
-    nombre: "Nil Garcia",
-    posicion: "Extrem dret",
-    numero: 17,
+    nombre: "MANZANERA BENET, RAMON",
+    posicion: "Davanter centre",
+    numero: 9,
     foto: "/images/placeholder-person.png",
-    edad: 21,
-    altura: "1,73m",
-    temporadas: 1
+    edad: 27,
+    altura: "1,84m",
+    temporadas: 3,
+    esCapitan: true
   },
   {
     id: 15,
-    nombre: "Biel Torras",
-    posicion: "Extrem esquerre",
-    numero: 14,
+    nombre: "TAREK SK",
+    posicion: "Davanter centre",
+    numero: 19,
     foto: "/images/placeholder-person.png",
     edad: 22,
+    altura: "1,79m",
+    temporadas: 1
+  },
+  {
+    id: 16,
+    nombre: "GASSAMA SAVANE, OUSSOUMANE",
+    posicion: "Extrem dret",
+    numero: 7,
+    foto: "/images/placeholder-person.png",
+    edad: 21,
+    altura: "1,75m",
+    temporadas: 1
+  },
+  {
+    id: 17,
+    nombre: "CARRILLO ANGRILL, LARS",
+    posicion: "Extrem esquerre",
+    numero: 11,
+    foto: "/images/placeholder-person.png",
+    edad: 23,
     altura: "1,76m",
     temporadas: 2
   },
   {
-    id: 16,
-    nombre: "Joan Boix",
-    posicion: "Migcampista defensiu",
-    numero: 16,
+    id: 18,
+    nombre: "HEREDIA RUIZ, ANDRES RODOLFO",
+    posicion: "Extrem dret",
+    numero: 14,
     foto: "/images/placeholder-person.png",
-    edad: 28,
+    edad: 22,
+    altura: "1,74m",
+    temporadas: 1
+  },
+  {
+    id: 19,
+    nombre: "UROZ IZQUIERDO, OSCAR",
+    posicion: "Extrem esquerre",
+    numero: 20,
+    foto: "/images/placeholder-person.png",
+    edad: 24,
+    altura: "1,78m",
+    temporadas: 2
+  },
+  {
+    id: 20,
+    nombre: "CIRERA PUIG, ALEIX",
+    posicion: "Davanter centre",
+    numero: 21,
+    foto: "/images/placeholder-person.png",
+    edad: 25,
+    altura: "1,82m",
+    temporadas: 1
+  },
+  {
+    id: 21,
+    nombre: "CANTOÑI OLAVE, JOHAN ANDRES",
+    posicion: "Davanter centre",
+    numero: 22,
+    foto: "/images/placeholder-person.png",
+    edad: 26,
     altura: "1,85m",
-    temporadas: 3
+    temporadas: 2
   },
 ];
 
@@ -274,7 +328,7 @@ export default function PrimerEquipPage() {
               <Trophy className="h-12 w-12 text-red-600 mr-4" />
               <div>
                 <h3 className="font-medium text-lg">Categoria</h3>
-                <p className="text-gray-700">Primera Catalana</p>
+                <p className="text-gray-700">Segona Catalana</p>
               </div>
             </div>
             
@@ -290,7 +344,7 @@ export default function PrimerEquipPage() {
               <Calendar className="h-12 w-12 text-red-600 mr-4" />
               <div>
                 <h3 className="font-medium text-lg">Temporada</h3>
-                <p className="text-gray-700">2024-2025</p>
+                <p className="text-gray-700">2025-2026</p>
               </div>
             </div>
             
@@ -360,7 +414,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -397,7 +456,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -434,7 +498,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -471,7 +540,12 @@ export default function PrimerEquipPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{jugador.nombre}</h3>
+                      {jugador.esCapitan && (
+                        <span className="bg-yellow-400 text-xs px-2 py-0.5 rounded-full text-black font-bold" title="Capità">C</span>
+                      )}
+                    </div>
                     <p className="text-red-600 text-sm">{jugador.posicion}</p>
                     <div className="mt-2 text-sm text-gray-600 grid grid-cols-2 gap-2">
                       <div>Edat: {jugador.edad}</div>
@@ -495,7 +569,7 @@ export default function PrimerEquipPage() {
                 <Clock className="w-6 h-6 text-red-600 mr-3" />
                 <div>
                   <h3 className="font-medium">Partits com a local</h3>
-                  <p className="text-gray-700">Dissabtes, 16:00h</p>
+                  <p className="text-gray-700">Diumenges, 12:00h</p>
                 </div>
               </div>
               
@@ -503,7 +577,7 @@ export default function PrimerEquipPage() {
                 <Calendar className="w-6 h-6 text-red-600 mr-3" />
                 <div>
                   <h3 className="font-medium">Entrenaments</h3>
-                  <p className="text-gray-700">Dimarts i dijous de 20:00h a 21:30h</p>
+                  <p className="text-gray-700">Dimarts, Dijous i Divendres 20:30h </p>
                 </div>
               </div>
               

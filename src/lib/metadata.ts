@@ -6,7 +6,7 @@ export const baseMetadata: Metadata = {
     default: "FC Cardedeu | Web Oficial",
     template: "%s | FC Cardedeu",
   },
-  description: "Web oficial del FC Cardedeu - Club de fútbol desde 1934 en Cardedeu, Barcelona",
+  description: "Web oficial del FC Cardedeu - Club de fútbol desde 1916 en Cardedeu, Barcelona",
   metadataBase: new URL("https://www.fccardedeu.cat"),
   openGraph: {
     type: "website",
@@ -25,7 +25,7 @@ export const baseMetadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "FC Cardedeu | Web Oficial",
-    description: "Web oficial del FC Cardedeu - Club de fútbol desde 1934 en Cardedeu, Barcelona",
+    description: "Web oficial del FC Cardedeu - Club de fútbol desde 1916 en Cardedeu, Barcelona",
     images: ["/og-image.jpg"],
   },
   robots: {

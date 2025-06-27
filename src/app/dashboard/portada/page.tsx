@@ -66,7 +66,7 @@ export default function PortadaPage() {
       },
       {
         id: "3",
-        title: "Formant campions des de 1934",
+        title: "Formant campions des de 1916",
         subtitle: "Compromesos amb l'esport i els valors",
         imageUrl: "/assets/portada3.jpg",
         order: 2,

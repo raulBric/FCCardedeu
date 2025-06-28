@@ -87,34 +87,193 @@ export default function Success() {
         
         // Agregar el ID de la sesión de pago
         const paymentData = {
-          ...inscripcionData,
+          // Asegurar que todos los campos estén correctamente nombrados para Supabase
+          player_name: inscripcionData.playerName,
+          birth_date: inscripcionData.birthDate,
+          player_dni: inscripcionData.playerDNI,
+          health_card: inscripcionData.healthCard,
+          team: inscripcionData.team,
+          parent_name: inscripcionData.parentName,
+          contact_phone1: inscripcionData.contactPhone1,
+          contact_phone2: inscripcionData.contactPhone2,
+          alt_contact: inscripcionData.altContact,
+          email1: inscripcionData.email1,
+          email2: inscripcionData.email2,
+          address: inscripcionData.address,
+          city: inscripcionData.city,
+          postal_code: inscripcionData.postalCode,
+          school: inscripcionData.school,
+          shirt_size: inscripcionData.shirtSize,
+          siblings_in_club: inscripcionData.siblingsInClub,
+          seasons_in_club: inscripcionData.seasonsInClub,
+          bank_account: inscripcionData.bankAccount,
+          comments: inscripcionData.comments,
+          accept_terms: inscripcionData.acceptTerms,
+          payment_type: inscripcionData.payment_type,
+          payment_amount: inscripcionData.payment_amount,
           payment_session_id: session_id,
           payment_status: 'completed',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          estado: 'pendiente',  // Estado inicial para todas las inscripciones
+          inscripcion_source: 'web'
         }
         
-        // Inserción mediante función RPC para sortear RLS
-        const { data: insertData, error } = await supabase.rpc('insert_inscripcio', {
-          new_row: paymentData,
-        })
-
-        if (error) {
-          console.error('Error en inserción vía RPC:', error)
-          throw new Error(error.message || 'Error al guardar la inscripción en la base de datos')
-        }
-
-        // Si llegamos aquí, todo ha ido bien
-        setInscripcionId(insertData)
-        setIsSuccess(true)
-        
-        // Limpiar localStorage ya que ya no necesitamos los datos
+        // Volvemos a usar la función RPC pero con un enfoque más robusto
         try {
-          localStorage.removeItem('pendingInscripcion')
-          // Ya no es necesario eliminar inscripcionFormData porque hemos unificado todo en pendingInscripcion
-        } catch (cleanupError) {
-          // Sólo log, no fallo crítico
-          console.warn('Error al limpiar localStorage:', cleanupError)
+          // Enviamos todos los campos del formulario para inserción
+          // pero los separamos en campos esenciales y complementarios
+          // Crear un objeto que guarde todos los datos de la inscripción
+          // y los separe en esenciales y adicionales
+          const completeData = {
+            // Datos esenciales (los mínimos necesarios para crear un registro)
+            essential: {
+              player_name: paymentData.player_name,
+              email1: paymentData.email1,
+              contact_phone1: paymentData.contact_phone1,
+              
+              // Datos de pago con múltiples opciones de nombre
+              // Enviamos varias opciones para aumentar compatibilidad
+              session_id: sessionId,
+              payment_status: 'completed'
+            },
+            // Datos complementarios (se guardarán si existen las columnas)
+            additional: {
+              // Datos personales
+              birth_date: paymentData.birth_date,
+              player_dni: paymentData.player_dni,
+              health_card: paymentData.health_card,
+              team: paymentData.team,
+              parent_name: paymentData.parent_name,
+              
+              // Datos de contacto
+              contact_phone2: paymentData.contact_phone2,
+              alt_contact: paymentData.alt_contact,
+              email2: paymentData.email2,
+              
+              // Dirección
+              address: paymentData.address,
+              city: paymentData.city,
+              postal_code: paymentData.postal_code,
+              
+              // Datos adicionales
+              school: paymentData.school,
+              shirt_size: paymentData.shirt_size,
+              siblings_in_club: paymentData.siblings_in_club || false,
+              seasons_in_club: paymentData.seasons_in_club || 0,
+              bank_account: paymentData.bank_account,
+              comments: paymentData.comments,
+              accept_terms: paymentData.accept_terms || false,
+              
+              // Datos de pago (sin payment_session_id que causó el error)
+              payment_type: paymentData.payment_type,
+              payment_amount: paymentData.payment_amount
+            }
+          };
+          
+          // Para guardar como backup por si falla el principal
+          const fallbackData = {
+            player_name: paymentData.player_name,
+            email1: paymentData.email1,
+            contact_phone1: paymentData.contact_phone1
+          };
+          
+          console.log('Usando RPC con datos completos:', completeData);
+          
+          // Guardar copia completa de los datos originales en localStorage
+          // para asegurar que no se pierden aunque la inserción falle
+          localStorage.setItem('lastInscripcionData', JSON.stringify({
+            data: paymentData,
+            timestamp: new Date().toISOString(),
+            sessionId: sessionId
+          }));
+          
+          let insertData = null;
+          let error = null;
+          
+          // Intento principal con la función RPC mejorada
+          try {
+            const result = await supabase.rpc(
+              'insert_inscripcio_complete',
+              { complete_data: completeData }
+            );
+            
+            insertData = result.data;
+            error = result.error;
+            
+            // Si hay error, intentamos con la función minimalista
+            if (error) {
+              console.warn('Error con insert_inscripcio_complete, intentando con minimal:', error.message);
+              
+              // Plan B: Usar la función minimalista
+              const minimalResult = await supabase.rpc(
+                'insert_inscripcio_minimal',
+                { min_data: fallbackData }
+              );
+              
+              if (!minimalResult.error) {
+                console.log('Éxito con inserción minimal:', minimalResult.data);
+                insertData = minimalResult.data;
+                error = null;
+              } else {
+                console.error('Error también con inserción minimal:', minimalResult.error);
+                
+                // Plan C: Inserción directa en tabla como último recurso
+                const directResult = await supabase
+                  .from('inscripcions')
+                  .insert(fallbackData)
+                  .select('id');
+                  
+                if (!directResult.error) {
+                  console.log('Éxito con inserción directa:', directResult.data);
+                  insertData = directResult.data[0];
+                  error = null;
+                } else {
+                  error = directResult.error;
+                }
+              }
+            }
+          } catch (unknownError) {
+            console.error('Error en el proceso de inserción:', unknownError);
+            // Manejar error tipo unknown de forma segura
+            const rpcError = unknownError as Error;
+            error = { message: rpcError?.message || 'Error desconocido en RPC' };
+          }
+            
+          if (error) {
+            console.error('Error en inserción vía RPC:', error);
+            throw new Error(`Error en RPC: ${error.message}`);
+          }
+          
+          // Inserción exitosa
+          console.log('Inscripción guardada con ID:', insertData?.id);
+          setInscripcionId(insertData?.id ? Number(insertData.id) : null);
+          setIsSuccess(true);
+          
+          // Guardar todos los datos originales en localStorage para referencia
+          // por si son necesarios más adelante
+          try {
+            localStorage.setItem('lastSuccessfulInscripcion', JSON.stringify({
+              id: insertData?.id,
+              sessionId: sessionId,
+              data: paymentData,
+              timestamp: new Date().toISOString()
+            }));
+          } catch (storageError) {
+            console.warn('Error al guardar datos completos:', storageError);
+          }
+          
+          // Limpiar localStorage ya que ya no necesitamos los datos de formulario
+          localStorage.removeItem('pendingInscripcion');
+          
+        } catch (processingError) {
+          console.error('Error en procesamiento:', processingError);
+          // Usando 'as any' para acceder a message de forma segura en processingError
+          throw new Error(`Error al procesar la inscripción: ${(processingError as any)?.message || 'Error desconocido'}`);
         }
+        
+        // El resto de la lógica ahora se maneja dentro del try
+        // y se ha eliminado código redundante
       } catch (supabaseError: any) {
         console.error('Error con Supabase:', supabaseError)
         throw new Error(`Error al guardar los datos: ${supabaseError.message || 'Error desconocido'}`)

@@ -115,7 +115,7 @@ export default function Success() {
           payment_status: 'completed',
           updated_at: new Date().toISOString(),
           created_at: new Date().toISOString(),
-          estado: 'pendiente',  // Estado inicial para todas las inscripciones
+          estado: 'pagat',      // Estado pagado en catalán cuando se confirma el pago
           inscripcion_source: 'web'
         }
         
@@ -167,7 +167,12 @@ export default function Success() {
               
               // Datos de pago (sin payment_session_id que causó el error)
               payment_type: paymentData.payment_type,
-              payment_amount: paymentData.payment_amount
+              payment_amount: paymentData.payment_amount,
+              
+              // Estado y metadatos (en catalán para coherencia)
+              estado: 'pagat',
+              status: 'pagat',                        // Alternativa
+              state: 'pagat'                          // Alternativa
             }
           };
           
@@ -345,7 +350,14 @@ export default function Success() {
 
   // Pantalla de éxito
   if (isSuccess) {
-    const customerEmail = sessionData?.customer_details?.email || ''
+    // Obtener el email directamente de localStorage en lugar de sessionData
+    let customerEmail = ''
+    try {
+      const inscripcionData = JSON.parse(localStorage.getItem('pendingInscripcion') || '{}')
+      customerEmail = inscripcionData.email1 || ''
+    } catch (e) {
+      console.error('Error al recuperar email desde localStorage', e)
+    }
     
     return (
       <section id="success" className="flex flex-col items-center justify-center min-h-[60vh] p-6">

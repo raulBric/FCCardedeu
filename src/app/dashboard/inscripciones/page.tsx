@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   CheckCircle, 
@@ -17,13 +17,13 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button, DataTable } from "@/components/dashboard/FormComponents";
 import Card from "@/components/dashboard/Card";
 import { 
-  obtenerInscripciones, 
-  actualizarEstadoInscripcion, 
+  obtenerInscripciones,
   crearJugadorDesdeInscripcion, 
   eliminarInscripcion,
   Inscripcion, 
   InscripcionDashboard
  } from "@/services/dashboardService";
+import { actualizarEstadoInscripcion } from "@/adapters/ServiceAdapters";
 
 // Tipo reducido únicamente con los campos usados en esta página
 export interface InscripcionTabla extends Record<string, unknown> {
@@ -33,7 +33,7 @@ export interface InscripcionTabla extends Record<string, unknown> {
   team?: string;
   contact_phone1?: string;
   email1?: string;
-  estado: "pendiente" | "completada" | "rechazada";
+  estado: "pendiente" | "completada" | "rechazada" | "pagat";
   processed: boolean;
   created_at: string;
   /* Campos adicionales opcionales requeridos por la lógica de la página */
@@ -62,9 +62,10 @@ export default function InscripcionesPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [filtro, setFiltro] = useState<'todas' | 'pendientes' | 'completadas' | 'rechazadas'>('todas');
   
-  // Cargar inscripciones
+  // Efectos para carga de datos
   useEffect(() => {
-    async function loadInscripciones() {
+    // Cargar las inscripciones al iniciar la página
+    const loadInscripciones = async () => {
       try {
         setIsLoading(true);
         console.log("Obteniendo inscripciones...");
@@ -159,16 +160,64 @@ export default function InscripcionesPage() {
     loadInscripciones();
   }, []);
   
+  // Método para procesar inscripciones automáticamente
+  const procesarInscripcionesAutomaticas = useCallback(async () => {
+    // Evitar procesar mientras está cargando o si no hay inscripciones
+    if (isLoading || inscripciones.length === 0) return;
+    
+    // Encontrar inscripciones pendientes con pago Stripe o estado 'pagat'
+    const inscripcionesParaProcesar = inscripciones.filter(insc => 
+      // Si su estado es pagat o es pendiente con pago de Stripe
+      (insc.estado === 'pagat' || 
+        (insc.estado === 'pendiente' && insc.payment_info?.method === 'stripe'))
+      // Y no está procesada aún
+      && !insc.processed
+    );
+    
+    // Si no hay inscripciones para procesar, salir temprano
+    if (inscripcionesParaProcesar.length === 0) return;
+    
+    console.log(`Se procesarán automáticamente ${inscripcionesParaProcesar.length} inscripciones`);
+    
+    // Procesar de forma secuencial para evitar condiciones de carrera
+    for (const inscripcion of inscripcionesParaProcesar) {
+      if (!inscripcion.id) continue;
+      
+      console.log(`Procesando automáticamente inscripción con ID ${inscripcion.id} (estado: ${inscripcion.estado})`);
+      try {
+        // Actualizar a estado completada
+        await actualizarEstadoInscripcion(inscripcion.id, 'completada', true, undefined, true);
+        
+        // Actualizar estado local (UI optimista)
+        setInscripciones(prev => prev.map(item => 
+          item.id === inscripcion.id 
+            ? { ...item, estado: 'completada', processed: true } 
+            : item
+        ));
+      } catch (error) {
+        console.error(`Error al procesar automáticamente inscripción ${inscripcion.id}:`, error);
+      }
+    }
+  }, [inscripciones, isLoading]);
+  
+  // Efecto para procesar automáticamente las inscripciones con pago de Stripe o estado pagat
+  useEffect(() => {
+    procesarInscripcionesAutomaticas();
+  }, [procesarInscripcionesAutomaticas]);
+  
   // Filtrar inscripciones
   // Aseguramos que la función de filtrado sea correcta para todos los estados
   const inscripcionesFiltradas = inscripciones.filter(inscripcion => {
     // Por defecto, si no hay estado o es inválido, lo tratamos como pendiente
     const estado = inscripcion.estado || 'pendiente';
     
-    if (filtro === 'todas') return true;
-    if (filtro === 'pendientes') return estado === 'pendiente';
-    if (filtro === 'completadas') return estado === 'completada';
-    if (filtro === 'rechazadas') return estado === 'rechazada';
+    // Considerar "pagat" como equivalente a "completada" para el filtrado
+    const estadoNormalizado = estado === 'pagat' ? 'completada' : estado;
+    
+    // Filtrar según la pestaña seleccionada
+    if (filtro === 'pendientes') return estadoNormalizado === 'pendiente';
+    if (filtro === 'completadas') return estadoNormalizado === 'completada';
+    if (filtro === 'rechazadas') return estadoNormalizado === 'rechazada';
     return true;
   });
   
@@ -204,7 +253,7 @@ export default function InscripcionesPage() {
         postal_code: inscripcion.postal_code || "",
         accept_terms: inscripcion.accept_terms ?? true,
         created_at: inscripcion.created_at || new Date().toISOString(),
-        estado: inscripcion.estado || "pendiente",
+        estado: inscripcion.estado,
         temporada: inscripcion.temporada || "2024-2025",
         // Use a defined string type instead of 'any' cast for site_access
         site_access: (inscripcion as Inscripcion & { site_access?: string }).site_access || "",
@@ -237,7 +286,7 @@ export default function InscripcionesPage() {
   };
   
   // Cambiar estado de inscripción
-  const handleChangeEstado = async (id: number, estado: 'pendiente' | 'completada' | 'rechazada') => {
+  const handleChangeEstado = async (id: number, estado: 'pendiente' | 'completada' | 'rechazada' | 'pagat') => {
     try {
       setActionLoading(id);
       // Añadir parámetros processed y useRpc para usar la estrategia optimista
@@ -519,13 +568,13 @@ export default function InscripcionesPage() {
         const estado = value || 'pendiente';
         return (
           <div className="flex items-center">
-            {(estado === 'pendiente' || estado === '') && (
+            {(estado === 'pendiente' || estado === '' || estado === 'pagat') && (
               <>
-              {/* Verificar si hay información de pago de Stripe */}
-              {item.payment_info && item.payment_info.method === 'stripe' ? (
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 flex items-center border border-blue-200">
+              {/* Verificar si hay información de pago de Stripe o estado pagat */}
+              {(item.payment_info && item.payment_info.method === 'stripe') || estado === 'pagat' ? (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 flex items-center border border-green-200">
                   <CheckCircle className="h-4 w-4 mr-1" />
-                  Pagat
+                  Processada
                 </span>
               ) : (
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 flex items-center border border-yellow-200">
@@ -585,7 +634,8 @@ export default function InscripcionesPage() {
             <span className="hidden sm:inline">Crear</span>
           </Button>
           
-          {item.estado === 'pendiente' && (
+          {/* Mostrar botones OK/No solo si es pendiente Y NO tiene un pago de Stripe (estado pagat) */}
+          {item.estado === 'pendiente' && !(item.payment_info && item.payment_info.method === 'stripe') && (
             <>
               <Button 
                 variant="primary" 

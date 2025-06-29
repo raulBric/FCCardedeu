@@ -27,10 +27,26 @@ import { Button } from "@/components/dashboard/FormComponents";
 import Card from "@/components/dashboard/Card";
 import { 
   actualizarEstadoInscripcion, 
-  crearJugadorDesdeInscripcion
+  crearJugadorDesdeInscripcion,
+  DashboardPaymentInfo
 } from "@/adapters/ServiceAdapters";
 
 // Definición del tipo Inscripcion para usar en este componente
+// Definición del tipo de información de pago compatible con DashboardPaymentInfo
+export interface PaymentInfo {
+  method: string;             // 'stripe', 'transfer', etc.
+  payment_method?: string;    // Igual que method, para compatibilidad
+  status?: string;           // 'paid', 'pending', etc.
+  payment_status: 'pending' | 'paid' | 'failed'; // No opcional para compatibilidad con DashboardPaymentInfo
+  reference?: string;        // ID de sesión u otra referencia
+  payment_id?: string;       // Igual que reference, para compatibilidad
+  timestamp?: string;        // Fecha del pago
+  payment_date?: string;     // Igual que timestamp, para compatibilidad
+  amount?: number;           // Cantidad
+  payment_amount?: number;   // Igual que amount, para compatibilidad
+  is_verified: boolean;      // Si el pago ha sido verificado - No opcional
+}
+
 export interface Inscripcion {
   id?: number;
   player_name: string;
@@ -55,10 +71,11 @@ export interface Inscripcion {
   comments?: string;
   accept_terms: boolean;
   created_at?: string;
-  estado?: 'pendiente' | 'completada' | 'rechazada';
+  estado?: 'pendiente' | 'completada' | 'rechazada' | 'pagat';
   temporada?: string;
   processed?: boolean;
   site_access?: string;
+  payment_info?: PaymentInfo; // Información de pago, incluye método Stripe
 }
 
 export default function DetalleInscripcionPage() {
@@ -138,8 +155,28 @@ export default function DetalleInscripcionPage() {
           estado: data.estado ?? 'pendiente',
           temporada: data.temporada ?? '2024-2025',
           processed: data.processed ?? false,
-          site_access: data.site_access ?? ''
+          site_access: data.site_access ?? '',
+          // Añadir la información de pago si existe, asegurando que los campos requeridos están presentes
+          payment_info: data.payment_info ? {
+            method: data.payment_info.method ?? '',
+            payment_method: data.payment_info.method ?? data.payment_info.payment_method ?? 'transfer',
+            status: data.payment_info.status ?? 'paid',
+            payment_status: (data.payment_info.payment_status || 
+              (data.payment_info.status === 'paid' ? 'paid' : 'pending')) as 'paid' | 'pending' | 'failed',
+            reference: data.payment_info.reference ?? '',
+            payment_id: data.payment_info.payment_id ?? data.payment_info.reference ?? '',
+            timestamp: data.payment_info.timestamp ?? new Date().toISOString(),
+            payment_date: data.payment_info.payment_date ?? data.payment_info.timestamp ?? new Date().toISOString(),
+            amount: data.payment_info.amount ?? data.payment_info.payment_amount ?? 0,
+            payment_amount: data.payment_info.payment_amount ?? data.payment_info.amount ?? 0,
+            is_verified: data.payment_info.is_verified ?? true
+          } : undefined
         };
+        
+        // Log para depuración
+        if (data.payment_info) {
+          console.log('Información de pago detectada:', data.payment_info);
+        }
 
         setInscripcion(inscripcionNormalizada);
       } catch (err) {
@@ -171,7 +208,7 @@ export default function DetalleInscripcionPage() {
   };
   
   // Cambiar estado de inscripción - Versión simplificada
-  const handleChangeEstado = async (estado: 'pendiente' | 'completada' | 'rechazada') => {
+  const handleChangeEstado = async (estado: 'pendiente' | 'completada' | 'rechazada' | 'pagat') => {
     if (!inscripcion) return;
     
     // El estado se actualiza de forma optimista, no necesitamos revertir
@@ -189,12 +226,64 @@ export default function DetalleInscripcionPage() {
       // Esto ahora es secundario - la UI ya se actualizó
       console.log(`Cambiando estado de inscripción ${inscripcionId} a ${estado}...`);
       
+      // Convertir payment_info local al formato DashboardPaymentInfo con valores predeterminados
+      let dashboardPaymentInfo: DashboardPaymentInfo | undefined;
+      
+      if (inscripcion.payment_info) {
+        // Determinar el estado del pago con un valor predeterminado seguro
+        // Aseguramos que payment_status sea estrictamente uno de los valores permitidos
+        let paymentStatus: 'pending' | 'paid' | 'failed';
+        
+        if (inscripcion.payment_info.payment_status === 'paid') {
+          paymentStatus = 'paid';
+        } else if (inscripcion.payment_info.payment_status === 'pending') {
+          paymentStatus = 'pending';
+        } else if (inscripcion.payment_info.payment_status === 'failed') {
+          paymentStatus = 'failed';
+        } else if (inscripcion.payment_info.status === 'paid') {
+          paymentStatus = 'paid';
+        } else {
+          paymentStatus = 'pending'; // Valor predeterminado seguro
+        }
+        
+        // Construir el objeto con todos los campos requeridos
+        dashboardPaymentInfo = {
+          payment_id: inscripcion.payment_info.reference || inscripcion.payment_info.payment_id || '',
+          payment_status: paymentStatus,
+          payment_method: inscripcion.payment_info.payment_method || inscripcion.payment_info.method || 'transfer',
+          payment_amount: inscripcion.payment_info.payment_amount || inscripcion.payment_info.amount || 0,
+          payment_date: inscripcion.payment_info.payment_date || inscripcion.payment_info.timestamp || new Date().toISOString(),
+          is_verified: inscripcion.payment_info.is_verified ?? true
+        };
+        
+        // Logging de depuración solo en entorno no productivo
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('dashboardPaymentInfo construido:', dashboardPaymentInfo);
+        }
+      } else {
+        // Si estamos cambiando a estado 'pagat' o 'completada', necesitamos información de pago
+        if (estado === 'pagat' || estado === 'completada') {
+          // Crear un objeto de pago predeterminado para evitar errores
+          dashboardPaymentInfo = {
+            payment_id: `manual-${Date.now()}`,
+            payment_status: 'paid' as const,
+            payment_method: 'transfer',
+            payment_amount: 0,
+            payment_date: new Date().toISOString(),
+            is_verified: true
+          };
+          console.log('Creado objeto de pago predeterminado:', dashboardPaymentInfo);
+        } else {
+          dashboardPaymentInfo = undefined;
+        }
+      }
+      
       // IMPORTANTE: Usamos useRpc=true para evitar problemas de RLS
       const resultado = await actualizarEstadoInscripcion(
         inscripcionId, 
         estado, 
         inscripcion.processed || false, 
-        undefined, 
+        dashboardPaymentInfo, 
         true // useRpc = true para evitar restricciones RLS
       );
       
@@ -205,7 +294,19 @@ export default function DetalleInscripcionPage() {
       
       // No alertamos al usuario si todo va bien
     } catch (error) {
-      console.error("Error al cambiar estado (backend):", error);
+      // Mejor manejo de errores con más detalles
+      console.error("Error al actualizar estado de inscripción:", error);
+      
+      // Extraer más información del error si es posible
+      if (error instanceof Error) {
+        console.error("Detalles del error:", { 
+          mensaje: error.message,
+          nombre: error.name,
+          stack: error.stack
+        });
+      } else if (typeof error === 'object' && error !== null) {
+        console.error("Objeto de error:", JSON.stringify(error));
+      }
       
       // En lugar de mostrar un alert, mostramos un mensaje suave en consola
       // y MANTENEMOS el cambio en la UI para mejor experiencia de usuario
@@ -214,6 +315,42 @@ export default function DetalleInscripcionPage() {
       setActionLoading(null);
     }
   };
+  
+  // Efecto para procesar automáticamente inscripciones con pagos de Stripe o estado "pagat"
+  useEffect(() => {
+    // Solo proceder si tenemos una inscripción válida
+    if (!inscripcion || inscripcionId === undefined) return;
+    
+    // Verificar si es una inscripción con pago Stripe, verificando diferentes propiedades para mayor robustez
+    const tienePagoStripe = 
+      (inscripcion.payment_info?.method === 'stripe') || 
+      (inscripcion.payment_info?.payment_method === 'stripe') ||
+      // También verificar si hay una referencia de Stripe (cs_...)
+      (inscripcion.payment_info?.reference?.startsWith('cs_')) ||
+      (inscripcion.payment_info?.payment_id?.startsWith('cs_'));
+      
+    // Verificar si el estado es pagat o si hay un pago confirmado
+    const esEstadoPagat = inscripcion.estado === 'pagat';
+    const pagoConfirmado = 
+      inscripcion.payment_info?.status === 'paid' || 
+      inscripcion.payment_info?.payment_status === 'paid';
+    
+    // Si tiene pago por Stripe o estado pagat y no está procesada, procesarla automáticamente
+    if ((tienePagoStripe || esEstadoPagat || pagoConfirmado) && 
+        !inscripcion.processed && 
+        inscripcion.estado !== 'completada') {
+      console.log(`Procesando automáticamente inscripción ${inscripcionId}`);
+      console.log(`Estado: ${inscripcion.estado}, Pago Stripe: ${tienePagoStripe}, Pago confirmado: ${pagoConfirmado}`);
+      
+      // Usar un pequeño timeout para evitar llamadas durante la carga inicial
+      const timer = setTimeout(() => {
+        handleChangeEstado('completada');
+      }, 500);
+      
+      // Limpiar timer si el componente se desmonta
+      return () => clearTimeout(timer);
+    }
+  }, [inscripcion, inscripcionId, handleChangeEstado]);
   
   // Procesar inscripción - Crear jugador
   const handleProcesarInscripcion = async () => {
@@ -345,9 +482,14 @@ export default function DetalleInscripcionPage() {
                   <Clock className="h-4 w-4 mr-1 flex-shrink-0" /> Pendent
                 </span>
               )}
+              {inscripcion.estado === 'pagat' && (
+                <span className="flex items-center text-green-600 font-medium whitespace-nowrap">
+                  <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" /> Pagat
+                </span>
+              )}
               {inscripcion.estado === 'completada' && (
                 <span className="flex items-center text-green-600 font-medium whitespace-nowrap">
-                  <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" /> Completada {inscripcion.processed && "(Jugador creat)"}
+                  <CheckCircle className="h-4 w-4 mr-1 flex-shrink-0" /> Processada {inscripcion.processed && "(Jugador creat)"}
                 </span>
               )}
               {inscripcion.estado === 'rechazada' && (
@@ -400,7 +542,10 @@ export default function DetalleInscripcionPage() {
             </Button>
           )}
           
-          {inscripcion.estado !== 'completada' && (
+          {/* Solo mostrar el botón de completar si no es un pago de Stripe ni estado pagat */}
+          {inscripcion.estado !== 'completada' && 
+           inscripcion.estado !== 'pagat' && 
+           inscripcion.payment_info?.method !== 'stripe' && (
             <Button
               variant="outline"
               onClick={() => handleChangeEstado('completada')}
@@ -412,7 +557,10 @@ export default function DetalleInscripcionPage() {
             </Button>
           )}
           
-          {inscripcion.estado !== 'rechazada' && (
+          {/* Solo mostrar el botón de rechazar si no es un pago de Stripe ni estado pagat */}
+          {inscripcion.estado !== 'rechazada' && 
+           inscripcion.estado !== 'pagat' && 
+           inscripcion.payment_info?.method !== 'stripe' && (
             <Button
               variant="outline"
               onClick={() => handleChangeEstado('rechazada')}

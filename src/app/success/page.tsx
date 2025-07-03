@@ -103,7 +103,7 @@ export default function Success() {
           city: inscripcionData.city,
           postal_code: inscripcionData.postalCode,
           school: inscripcionData.school,
-          shirt_size: inscripcionData.shirtSize,
+
           siblings_in_club: inscripcionData.siblingsInClub,
           seasons_in_club: inscripcionData.seasonsInClub,
           bank_account: inscripcionData.bankAccount,
@@ -158,7 +158,7 @@ export default function Success() {
               
               // Datos adicionales
               school: paymentData.school,
-              shirt_size: paymentData.shirt_size,
+
               siblings_in_club: paymentData.siblings_in_club || false,
               seasons_in_club: paymentData.seasons_in_club || 0,
               bank_account: paymentData.bank_account,

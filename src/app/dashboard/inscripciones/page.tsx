@@ -60,7 +60,15 @@ export default function InscripcionesPage() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [filtro, setFiltro] = useState<'todas' | 'pendientes' | 'completadas' | 'rechazadas'>('todas');
+  
+  // Sistema de filtros
+  const [filtroEstado, setFiltroEstado] = useState<'todas' | 'pendientes' | 'completadas' | 'rechazadas' | 'pagat'>('todas');
+  const [filtroEquipo, setFiltroEquipo] = useState<string>('todos');
+  const [busqueda, setBusqueda] = useState<string>('');
+  const [filtroPeriodo, setFiltroPeriodo] = useState<'todas' | 'ultimas24h' | 'ultimaSemana' | 'ultimoMes'>('todas');
+  
+  // Lista de equipos únicos extraídos de las inscripciones
+  const [equiposDisponibles, setEquiposDisponibles] = useState<string[]>([]);
   
   // Efectos para carga de datos
   useEffect(() => {
@@ -114,6 +122,13 @@ export default function InscripcionesPage() {
           }));
           
           setInscripciones(inscripcionesDirectas);
+
+          // Extraer equipos únicos
+          const equipos = [...new Set(inscripcionesDirectas
+            .filter(i => i.team && i.team.trim() !== '')
+            .map(i => i.team?.trim() || ''))];
+          setEquiposDisponibles(equipos.sort());
+          
           return; // Salimos temprano si hay datos directos
         }
         
@@ -204,22 +219,6 @@ export default function InscripcionesPage() {
   useEffect(() => {
     procesarInscripcionesAutomaticas();
   }, [procesarInscripcionesAutomaticas]);
-  
-  // Filtrar inscripciones
-  // Aseguramos que la función de filtrado sea correcta para todos los estados
-  const inscripcionesFiltradas = inscripciones.filter(inscripcion => {
-    // Por defecto, si no hay estado o es inválido, lo tratamos como pendiente
-    const estado = inscripcion.estado || 'pendiente';
-    
-    // Considerar "pagat" como equivalente a "completada" para el filtrado
-    const estadoNormalizado = estado === 'pagat' ? 'completada' : estado;
-    
-    // Filtrar según la pestaña seleccionada
-    if (filtro === 'pendientes') return estadoNormalizado === 'pendiente';
-    if (filtro === 'completadas') return estadoNormalizado === 'completada';
-    if (filtro === 'rechazadas') return estadoNormalizado === 'rechazada';
-    return true;
-  });
   
   // Procesar inscripción - Crear jugador
   const handleProcesarInscripcion = async (inscripcion: InscripcionTabla) => {
@@ -512,6 +511,58 @@ export default function InscripcionesPage() {
   // Mantener la función CSV original por compatibilidad
   const downloadAllCSV = downloadExcel;
   
+  // Filtrar las inscripciones según los criterios seleccionados
+  // Esta función calcula los resultados filtrados
+  const getInscripcionesFiltradas = () => {
+    return inscripciones.filter(inscripcion => {
+      // Filtro por estado
+      if (filtroEstado !== 'todas' && inscripcion.estado !== filtroEstado) {
+        return false;
+      }
+
+      // Filtro por equipo
+      if (filtroEquipo !== 'todos' && inscripcion.team?.trim() !== filtroEquipo) {
+        return false;
+      }
+
+      // Filtro por búsqueda (nombre jugador o tutor)
+      if (busqueda.trim() !== '') {
+        const searchTerm = busqueda.toLowerCase().trim();
+        const matchName = inscripcion.player_name?.toLowerCase().includes(searchTerm);
+        const matchParent = inscripcion.parent_name?.toLowerCase().includes(searchTerm);
+        const matchEmail = inscripcion.email1?.toLowerCase().includes(searchTerm);
+        
+        if (!matchName && !matchParent && !matchEmail) {
+          return false;
+        }
+      }
+
+      // Filtro por período
+      if (filtroPeriodo !== 'todas') {
+        const fechaInscripcion = new Date(inscripcion.created_at);
+        const ahora = new Date();
+        
+        // Calcular diferencia de tiempo en milisegundos
+        const tiempoTranscurrido = ahora.getTime() - fechaInscripcion.getTime();
+        const horasTranscurridas = tiempoTranscurrido / (1000 * 60 * 60);
+        
+        if (filtroPeriodo === 'ultimas24h' && horasTranscurridas > 24) {
+          return false;
+        } else if (filtroPeriodo === 'ultimaSemana' && horasTranscurridas > 24 * 7) {
+          return false;
+        } else if (filtroPeriodo === 'ultimoMes' && horasTranscurridas > 24 * 30) {
+          return false;
+        }
+      }
+
+      // Si ha pasado todos los filtros, incluir en resultados
+      return true;
+    });
+  }
+  
+  // Calcular las inscripciones filtradas usando la función
+  const inscripcionesFiltradas = getInscripcionesFiltradas();
+
   // Definir columnas para la tabla
   const columns = [
     {
@@ -716,6 +767,100 @@ export default function InscripcionesPage() {
           </Button>
         </div>
       </div>
+      
+      {/* Panel de filtros */}
+      <Card className="mb-4">
+        <div className="p-4">
+          <h3 className="text-sm font-medium mb-3">Filtres de cerca</h3>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Filtro por estado */}
+            <div className="flex flex-col">
+              <label htmlFor="filtro-estado" className="text-xs mb-1 text-gray-600">Estat</label>
+              <select 
+                id="filtro-estado"
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={filtroEstado}
+                onChange={e => setFiltroEstado(e.target.value as any)}
+              >
+                <option value="todas">Tots els estats</option>
+                <option value="pendientes">Pendents</option>
+                <option value="completadas">Completades</option>
+                <option value="pagat">Pagades</option>
+                <option value="rechazadas">Rebutjades</option>
+              </select>
+            </div>
+            
+            {/* Filtro por equipo */}
+            <div className="flex flex-col">
+              <label htmlFor="filtro-equipo" className="text-xs mb-1 text-gray-600">Equip</label>
+              <select 
+                id="filtro-equipo"
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={filtroEquipo}
+                onChange={e => setFiltroEquipo(e.target.value)}
+              >
+                <option value="todos">Tots els equips</option>
+                {equiposDisponibles.map(equipo => (
+                  <option key={equipo} value={equipo}>{equipo}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Filtro por periodo */}
+            <div className="flex flex-col">
+              <label htmlFor="filtro-periodo" className="text-xs mb-1 text-gray-600">Període</label>
+              <select 
+                id="filtro-periodo"
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={filtroPeriodo}
+                onChange={e => setFiltroPeriodo(e.target.value as any)}
+              >
+                <option value="todas">Totes les dates</option>
+                <option value="ultimas24h">Últimes 24 hores</option>
+                <option value="ultimaSemana">Última setmana</option>
+                <option value="ultimoMes">Últim mes</option>
+              </select>
+            </div>
+            
+            {/* Búsqueda por nombre */}
+            <div className="flex flex-col">
+              <label htmlFor="busqueda" className="text-xs mb-1 text-gray-600">Cerca</label>
+              <input
+                type="text"
+                id="busqueda"
+                placeholder="Nom, tutor o email..."
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          {/* Contador de resultados y botón para limpiar filtros */}
+          <div className="flex justify-between items-center mt-4 text-sm">
+            <span>
+              {inscripcionesFiltradas.length === 1 
+                ? '1 inscripció trobada' 
+                : `${inscripcionesFiltradas.length} inscripcions trobades`}
+            </span>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="text-xs px-3 py-1"
+              onClick={() => {
+                setFiltroEstado('todas');
+                setFiltroEquipo('todos');
+                setBusqueda('');
+                setFiltroPeriodo('todas');
+              }}
+            >
+              Netejar filtres
+            </Button>
+          </div>
+        </div>
+      </Card>
       
       {/* Contador eliminado según solicitud del usuario */}
       

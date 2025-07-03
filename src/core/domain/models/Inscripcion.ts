@@ -56,7 +56,7 @@ export interface CreateInscripcionDTO {
   city: string;
   postalCode: string;
   school?: string;
-  shirtSize?: string;
+
   siblingsInClub?: string;
   seasonsInClub?: string;
   bankAccount?: string;

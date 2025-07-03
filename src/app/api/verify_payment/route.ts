@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
           amount_total: 26000,
           currency: 'eur',
           customer_details: {
-            email: 'error-recuperado@fccardedeu.org',
+            email: 'tic@fccardedeu.org',
             name: 'Usuario Recuperado',
           },
           metadata: {

@@ -35,7 +35,9 @@ export async function GET(req: NextRequest) {
           amount_total: 26000, // 260€ en céntimos
           currency: 'eur',
           customer_details: {
-            email: 'desarrollo@fccardedeu.org',
+            // Debemos usar el email de la inscripción desde localStorage en el frontend
+            // No lo hardcodeamos aquí para poder recuperar el valor real por cliente
+            email: '',
             name: 'Usuario de Prueba',
           },
           metadata: {
@@ -85,7 +87,7 @@ export async function GET(req: NextRequest) {
           amount_total: 26000,
           currency: 'eur',
           customer_details: {
-            email: 'error-recuperado@fccardedeu.org',
+            email: 'tic@fccardedeu.org',
             name: 'Usuario Recuperado',
           },
           metadata: {

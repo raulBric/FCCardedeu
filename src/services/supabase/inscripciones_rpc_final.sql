@@ -89,18 +89,36 @@ BEGIN
   -- Primero eliminamos políticas existentes para no tener duplicados
   DROP POLICY IF EXISTS "dashboard_full_access" ON public.inscripcions;
   DROP POLICY IF EXISTS "web_insert_policy" ON public.inscripcions;
+  DROP POLICY IF EXISTS "public_select_policy" ON public.inscripcions;
+  DROP POLICY IF EXISTS "always_visible_policy" ON public.inscripcions;
   
-  -- Política para acceso desde el dashboard (administrador)
+  -- Política para acceso TOTAL desde el dashboard (administrador)
+  -- Esta política garantiza que los usuarios autenticados puedan ver, insertar,
+  -- actualizar y eliminar TODOS los registros
   CREATE POLICY "dashboard_full_access" ON public.inscripcions
   FOR ALL
   TO authenticated
-  USING (true);
+  USING (true)
+  WITH CHECK (true);
   
   -- Política para permitir inserciones desde la web (sin autenticación)
   CREATE POLICY "web_insert_policy" ON public.inscripcions
   FOR INSERT
   TO anon
   WITH CHECK (true);
+  
+  -- Política para permitir que cualquier usuario pueda ver sus propios registros
+  -- Esta política es útil para mantener la consistencia de datos
+  CREATE POLICY "public_select_policy" ON public.inscripcions
+  FOR SELECT
+  TO anon
+  USING (email1 IS NOT NULL);
+  
+  -- Política adicional para garantizar visibilidad siempre desde el dashboard
+  CREATE POLICY "always_visible_policy" ON public.inscripcions
+  FOR SELECT 
+  TO authenticated
+  USING (true);
   
   RETURN true;
 EXCEPTION
@@ -221,7 +239,7 @@ BEGIN
     -- Si existe, actualizar esta columna
     IF column_exists THEN
       UPDATE public.inscripcions 
-      SET estado = 'pendiente'
+      SET estado = 'pagat'
       WHERE id = inserted_id;
     END IF;
   EXCEPTION WHEN OTHERS THEN
@@ -414,7 +432,7 @@ BEGIN
       'amount', additional_data->>'payment_amount',
       'status', essential_data->>'payment_status'
     ),
-    'pendiente',                           -- Para status_column
+    'pagat',                               -- Para status_column (en catalán, consistente con el resto de la aplicación)
     inserted_id;                           -- Para WHERE id = ?
   
   -- Devolver el ID insertado

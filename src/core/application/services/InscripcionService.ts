@@ -38,7 +38,7 @@ export class InscripcionService {
       city: data.city,
       postal_code: data.postalCode,
       school: data.school,
-      shirt_size: data.shirtSize,
+
       siblings_in_club: data.siblingsInClub,
       seasons_in_club: data.seasonsInClub,
       bank_account: data.bankAccount,

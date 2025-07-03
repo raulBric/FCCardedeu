@@ -56,7 +56,7 @@ export interface CreateInscripcionDTO {
   city: string;
   postalCode: string;
   school?: string;
-  shirtSize?: string;
+
   siblingsInClub?: string;
   seasonsInClub?: string;
   bankAccount?: string;
@@ -67,7 +67,7 @@ export interface CreateInscripcionDTO {
 // DTO para actualizar el estado de una inscripción
 export interface UpdateInscripcionEstadoDTO {
   id: number;
-  estado: 'pendiente' | 'completada' | 'rechazada';
+  estado: 'pendiente' | 'completada' | 'rechazada' | 'pagat';
   processed?: boolean;
   paymentInfo?: Partial<PaymentInfo>;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { 
   CheckCircle, 
@@ -17,13 +17,13 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button, DataTable } from "@/components/dashboard/FormComponents";
 import Card from "@/components/dashboard/Card";
 import { 
-  obtenerInscripciones, 
-  actualizarEstadoInscripcion, 
+  obtenerInscripciones,
   crearJugadorDesdeInscripcion, 
   eliminarInscripcion,
   Inscripcion, 
   InscripcionDashboard
  } from "@/services/dashboardService";
+import { actualizarEstadoInscripcion } from "@/adapters/ServiceAdapters";
 
 // Tipo reducido únicamente con los campos usados en esta página
 export interface InscripcionTabla extends Record<string, unknown> {
@@ -33,7 +33,7 @@ export interface InscripcionTabla extends Record<string, unknown> {
   team?: string;
   contact_phone1?: string;
   email1?: string;
-  estado: "pendiente" | "completada" | "rechazada";
+  estado: "pendiente" | "completada" | "rechazada" | "pagat";
   processed: boolean;
   created_at: string;
   /* Campos adicionales opcionales requeridos por la lógica de la página */
@@ -60,11 +60,20 @@ export default function InscripcionesPage() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [filtro, setFiltro] = useState<'todas' | 'pendientes' | 'completadas' | 'rechazadas'>('todas');
   
-  // Cargar inscripciones
+  // Sistema de filtros
+  const [filtroEstado, setFiltroEstado] = useState<'todas' | 'pendientes' | 'completadas' | 'rechazadas' | 'pagat'>('todas');
+  const [filtroEquipo, setFiltroEquipo] = useState<string>('todos');
+  const [busqueda, setBusqueda] = useState<string>('');
+  const [filtroPeriodo, setFiltroPeriodo] = useState<'todas' | 'ultimas24h' | 'ultimaSemana' | 'ultimoMes'>('todas');
+  
+  // Lista de equipos únicos extraídos de las inscripciones
+  const [equiposDisponibles, setEquiposDisponibles] = useState<string[]>([]);
+  
+  // Efectos para carga de datos
   useEffect(() => {
-    async function loadInscripciones() {
+    // Cargar las inscripciones al iniciar la página
+    const loadInscripciones = async () => {
       try {
         setIsLoading(true);
         console.log("Obteniendo inscripciones...");
@@ -113,6 +122,13 @@ export default function InscripcionesPage() {
           }));
           
           setInscripciones(inscripcionesDirectas);
+
+          // Extraer equipos únicos
+          const equipos = [...new Set(inscripcionesDirectas
+            .filter(i => i.team && i.team.trim() !== '')
+            .map(i => i.team?.trim() || ''))];
+          setEquiposDisponibles(equipos.sort());
+          
           return; // Salimos temprano si hay datos directos
         }
         
@@ -159,18 +175,50 @@ export default function InscripcionesPage() {
     loadInscripciones();
   }, []);
   
-  // Filtrar inscripciones
-  // Aseguramos que la función de filtrado sea correcta para todos los estados
-  const inscripcionesFiltradas = inscripciones.filter(inscripcion => {
-    // Por defecto, si no hay estado o es inválido, lo tratamos como pendiente
-    const estado = inscripcion.estado || 'pendiente';
+  // Método para procesar inscripciones automáticamente
+  const procesarInscripcionesAutomaticas = useCallback(async () => {
+    // Evitar procesar mientras está cargando o si no hay inscripciones
+    if (isLoading || inscripciones.length === 0) return;
     
-    if (filtro === 'todas') return true;
-    if (filtro === 'pendientes') return estado === 'pendiente';
-    if (filtro === 'completadas') return estado === 'completada';
-    if (filtro === 'rechazadas') return estado === 'rechazada';
-    return true;
-  });
+    // Encontrar inscripciones pendientes con pago Stripe o estado 'pagat'
+    const inscripcionesParaProcesar = inscripciones.filter(insc => 
+      // Si su estado es pagat o es pendiente con pago de Stripe
+      (insc.estado === 'pagat' || 
+        (insc.estado === 'pendiente' && insc.payment_info?.method === 'stripe'))
+      // Y no está procesada aún
+      && !insc.processed
+    );
+    
+    // Si no hay inscripciones para procesar, salir temprano
+    if (inscripcionesParaProcesar.length === 0) return;
+    
+    console.log(`Se procesarán automáticamente ${inscripcionesParaProcesar.length} inscripciones`);
+    
+    // Procesar de forma secuencial para evitar condiciones de carrera
+    for (const inscripcion of inscripcionesParaProcesar) {
+      if (!inscripcion.id) continue;
+      
+      console.log(`Procesando automáticamente inscripción con ID ${inscripcion.id} (estado: ${inscripcion.estado})`);
+      try {
+        // Actualizar a estado completada
+        await actualizarEstadoInscripcion(inscripcion.id, 'completada', true, undefined, true);
+        
+        // Actualizar estado local (UI optimista)
+        setInscripciones(prev => prev.map(item => 
+          item.id === inscripcion.id 
+            ? { ...item, estado: 'completada', processed: true } 
+            : item
+        ));
+      } catch (error) {
+        console.error(`Error al procesar automáticamente inscripción ${inscripcion.id}:`, error);
+      }
+    }
+  }, [inscripciones, isLoading]);
+  
+  // Efecto para procesar automáticamente las inscripciones con pago de Stripe o estado pagat
+  useEffect(() => {
+    procesarInscripcionesAutomaticas();
+  }, [procesarInscripcionesAutomaticas]);
   
   // Procesar inscripción - Crear jugador
   const handleProcesarInscripcion = async (inscripcion: InscripcionTabla) => {
@@ -204,7 +252,7 @@ export default function InscripcionesPage() {
         postal_code: inscripcion.postal_code || "",
         accept_terms: inscripcion.accept_terms ?? true,
         created_at: inscripcion.created_at || new Date().toISOString(),
-        estado: inscripcion.estado || "pendiente",
+        estado: inscripcion.estado,
         temporada: inscripcion.temporada || "2024-2025",
         // Use a defined string type instead of 'any' cast for site_access
         site_access: (inscripcion as Inscripcion & { site_access?: string }).site_access || "",
@@ -237,7 +285,7 @@ export default function InscripcionesPage() {
   };
   
   // Cambiar estado de inscripción
-  const handleChangeEstado = async (id: number, estado: 'pendiente' | 'completada' | 'rechazada') => {
+  const handleChangeEstado = async (id: number, estado: 'pendiente' | 'completada' | 'rechazada' | 'pagat') => {
     try {
       setActionLoading(id);
       // Añadir parámetros processed y useRpc para usar la estrategia optimista
@@ -463,6 +511,58 @@ export default function InscripcionesPage() {
   // Mantener la función CSV original por compatibilidad
   const downloadAllCSV = downloadExcel;
   
+  // Filtrar las inscripciones según los criterios seleccionados
+  // Esta función calcula los resultados filtrados
+  const getInscripcionesFiltradas = () => {
+    return inscripciones.filter(inscripcion => {
+      // Filtro por estado
+      if (filtroEstado !== 'todas' && inscripcion.estado !== filtroEstado) {
+        return false;
+      }
+
+      // Filtro por equipo
+      if (filtroEquipo !== 'todos' && inscripcion.team?.trim() !== filtroEquipo) {
+        return false;
+      }
+
+      // Filtro por búsqueda (nombre jugador o tutor)
+      if (busqueda.trim() !== '') {
+        const searchTerm = busqueda.toLowerCase().trim();
+        const matchName = inscripcion.player_name?.toLowerCase().includes(searchTerm);
+        const matchParent = inscripcion.parent_name?.toLowerCase().includes(searchTerm);
+        const matchEmail = inscripcion.email1?.toLowerCase().includes(searchTerm);
+        
+        if (!matchName && !matchParent && !matchEmail) {
+          return false;
+        }
+      }
+
+      // Filtro por período
+      if (filtroPeriodo !== 'todas') {
+        const fechaInscripcion = new Date(inscripcion.created_at);
+        const ahora = new Date();
+        
+        // Calcular diferencia de tiempo en milisegundos
+        const tiempoTranscurrido = ahora.getTime() - fechaInscripcion.getTime();
+        const horasTranscurridas = tiempoTranscurrido / (1000 * 60 * 60);
+        
+        if (filtroPeriodo === 'ultimas24h' && horasTranscurridas > 24) {
+          return false;
+        } else if (filtroPeriodo === 'ultimaSemana' && horasTranscurridas > 24 * 7) {
+          return false;
+        } else if (filtroPeriodo === 'ultimoMes' && horasTranscurridas > 24 * 30) {
+          return false;
+        }
+      }
+
+      // Si ha pasado todos los filtros, incluir en resultados
+      return true;
+    });
+  }
+  
+  // Calcular las inscripciones filtradas usando la función
+  const inscripcionesFiltradas = getInscripcionesFiltradas();
+
   // Definir columnas para la tabla
   const columns = [
     {
@@ -519,13 +619,13 @@ export default function InscripcionesPage() {
         const estado = value || 'pendiente';
         return (
           <div className="flex items-center">
-            {(estado === 'pendiente' || estado === '') && (
+            {(estado === 'pendiente' || estado === '' || estado === 'pagat') && (
               <>
-              {/* Verificar si hay información de pago de Stripe */}
-              {item.payment_info && item.payment_info.method === 'stripe' ? (
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 flex items-center border border-blue-200">
+              {/* Verificar si hay información de pago de Stripe o estado pagat */}
+              {(item.payment_info && item.payment_info.method === 'stripe') || estado === 'pagat' ? (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 flex items-center border border-green-200">
                   <CheckCircle className="h-4 w-4 mr-1" />
-                  Pagat
+                  Processada
                 </span>
               ) : (
                 <span className="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 flex items-center border border-yellow-200">
@@ -585,7 +685,8 @@ export default function InscripcionesPage() {
             <span className="hidden sm:inline">Crear</span>
           </Button>
           
-          {item.estado === 'pendiente' && (
+          {/* Mostrar botones OK/No solo si es pendiente Y NO tiene un pago de Stripe (estado pagat) */}
+          {item.estado === 'pendiente' && !(item.payment_info && item.payment_info.method === 'stripe') && (
             <>
               <Button 
                 variant="primary" 
@@ -666,6 +767,100 @@ export default function InscripcionesPage() {
           </Button>
         </div>
       </div>
+      
+      {/* Panel de filtros */}
+      <Card className="mb-4">
+        <div className="p-4">
+          <h3 className="text-sm font-medium mb-3">Filtres de cerca</h3>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Filtro por estado */}
+            <div className="flex flex-col">
+              <label htmlFor="filtro-estado" className="text-xs mb-1 text-gray-600">Estat</label>
+              <select 
+                id="filtro-estado"
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={filtroEstado}
+                onChange={e => setFiltroEstado(e.target.value as any)}
+              >
+                <option value="todas">Tots els estats</option>
+                <option value="pendientes">Pendents</option>
+                <option value="completadas">Completades</option>
+                <option value="pagat">Pagades</option>
+                <option value="rechazadas">Rebutjades</option>
+              </select>
+            </div>
+            
+            {/* Filtro por equipo */}
+            <div className="flex flex-col">
+              <label htmlFor="filtro-equipo" className="text-xs mb-1 text-gray-600">Equip</label>
+              <select 
+                id="filtro-equipo"
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={filtroEquipo}
+                onChange={e => setFiltroEquipo(e.target.value)}
+              >
+                <option value="todos">Tots els equips</option>
+                {equiposDisponibles.map(equipo => (
+                  <option key={equipo} value={equipo}>{equipo}</option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Filtro por periodo */}
+            <div className="flex flex-col">
+              <label htmlFor="filtro-periodo" className="text-xs mb-1 text-gray-600">Període</label>
+              <select 
+                id="filtro-periodo"
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={filtroPeriodo}
+                onChange={e => setFiltroPeriodo(e.target.value as any)}
+              >
+                <option value="todas">Totes les dates</option>
+                <option value="ultimas24h">Últimes 24 hores</option>
+                <option value="ultimaSemana">Última setmana</option>
+                <option value="ultimoMes">Últim mes</option>
+              </select>
+            </div>
+            
+            {/* Búsqueda por nombre */}
+            <div className="flex flex-col">
+              <label htmlFor="busqueda" className="text-xs mb-1 text-gray-600">Cerca</label>
+              <input
+                type="text"
+                id="busqueda"
+                placeholder="Nom, tutor o email..."
+                className="p-2 border border-gray-300 rounded-md text-sm"
+                value={busqueda}
+                onChange={e => setBusqueda(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          {/* Contador de resultados y botón para limpiar filtros */}
+          <div className="flex justify-between items-center mt-4 text-sm">
+            <span>
+              {inscripcionesFiltradas.length === 1 
+                ? '1 inscripció trobada' 
+                : `${inscripcionesFiltradas.length} inscripcions trobades`}
+            </span>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="text-xs px-3 py-1"
+              onClick={() => {
+                setFiltroEstado('todas');
+                setFiltroEquipo('todos');
+                setBusqueda('');
+                setFiltroPeriodo('todas');
+              }}
+            >
+              Netejar filtres
+            </Button>
+          </div>
+        </div>
+      </Card>
       
       {/* Contador eliminado según solicitud del usuario */}
       

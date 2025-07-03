@@ -654,7 +654,7 @@ export type InscripcionDashboard = {
   site_access?: string;
   accept_terms: boolean;
   created_at: string;
-  estado: 'pendiente' | 'completada' | 'rechazada';
+  estado: 'pendiente' | 'completada' | 'rechazada' | 'pagat';
   temporada: string;
   processed: boolean;
   payment_info?: DashboardPaymentInfo;
@@ -776,7 +776,7 @@ export const obtenerInscripcion = async (id: number): Promise<InscripcionDashboa
 // Actualizador de estado para inscripciones que funciona con ESM
 export const actualizarEstadoInscripcion = async (
   id: number, 
-  estado: 'pendiente' | 'completada' | 'rechazada', 
+  estado: 'pendiente' | 'completada' | 'rechazada' | 'pagat', 
   processed: boolean,
   paymentInfo?: DashboardPaymentInfo,
   useRpc: boolean = false
